@@ -52,6 +52,15 @@ func _show_choices() -> void:
 	_clear()
 	_header()
 	_box.add_child(UIKit.para(event["text"], 19))
+	if event.get("notice", false):
+		# A warning card (e.g. supplies running out): nothing to choose, just acknowledge.
+		var row := UIKit.hbox()
+		row.add_child(UIKit.filler())
+		var ok := UIKit.primary_button("UNDERSTOOD", _close, 220)
+		row.add_child(ok)
+		_box.add_child(row)
+		ok.call_deferred("grab_focus")
+		return
 	_box.add_child(UIKit.heading("WHAT DO YOU DO?"))
 	var n := 1
 	for choice in event["choices"]:

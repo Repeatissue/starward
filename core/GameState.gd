@@ -81,6 +81,7 @@ func new_run(p_seed: int, bg: Dictionary) -> void:
 		var trait_text: String = RNG.pick(TRAITS)
 		crew.append(_make_crew(name_text, role, trait_text, 70.0))
 	route = Data.build_route()
+	TravelSim.reset()
 	node_index = 0
 	progress = 0.0
 	thrust = "cruise"
@@ -251,11 +252,18 @@ func end_run(win: bool, reason: String) -> void:
 	changed.emit()
 
 
+## Arrival: colonists x10 + surviving crew x200 + hull x2 + credits/10, times the captain's multiplier.
+## A lost run still scores for how far it got: up to 1,000 points for distance, times the multiplier.
 func score() -> int:
+	var mult := float(background.get("score_mult", 1.0))
 	if not victory:
-		return 0
+		return int(1000.0 * journey_fraction() * mult)
 	var base := colonists * 10 + living_crew().size() * 200 + int(get_res("hull")) * 2 + int(get_res("credits") / 10.0)
-	return int(base * float(background.get("score_mult", 1.0)))
+	return int(base * mult)
+
+
+func journey_fraction() -> float:
+	return clampf(distance_travelled() / maxf(total_distance(), 1.0), 0.0, 1.0)
 
 
 # --- Save data -----------------------------------------------------------
@@ -278,6 +286,7 @@ func to_dict() -> Dictionary:
 		"flags": flags,
 		"seen_events": seen_events,
 		"log_lines": log_lines,
+		"warned": TravelSim._warned,
 	}
 
 
@@ -297,6 +306,8 @@ func from_dict(d: Dictionary) -> void:
 	flags = d.get("flags", {})
 	seen_events = d.get("seen_events", {})
 	log_lines = d.get("log_lines", [])
+	TravelSim.reset()
+	TravelSim._warned = d.get("warned", {})
 	run_active = true
 	ended = false
 	victory = false

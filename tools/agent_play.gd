@@ -84,6 +84,8 @@ func _run(cmd: String, rest: Array) -> void:
 			var result := TravelSim.travel()
 			if result.get("type", "") == "event":
 				_pending = result["event"]["id"]
+			elif result.get("type", "") == "alert":
+				_say("WARNING - travel paused: " + str(result["text"]))
 		"choose":
 			if _pending == "":
 				_say("There is no event to answer.")
@@ -168,8 +170,12 @@ func _print_state() -> void:
 	var where := "At: %s (%s, %s)." % [node["name"], node["type"], node["sector_name"]]
 	if GameState.progress > 0.0:
 		where = "In flight from %s toward %s." % [node["name"], GameState.next_node()["name"]]
-	_out.append("%s  Next resupply: %s in %.1f light-units (~%d days)." % [where,
-		stop["name"], float(stop["distance"]), ceili(float(stop["distance"]) / GameState.speed())])
+	_out.append("%s  Next resupply: %s in ~%d days at %s." % [where,
+		stop["name"], ceili(float(stop["distance"]) / GameState.speed()), GameState.thrust])
+	var use: Array = []
+	for key in ["fuel", "food", "oxygen", "power"]:
+		use.append("%s %.1f" % [key, GameState.daily_use(key)])
+	_out.append("Daily use at current settings: " + ", ".join(PackedStringArray(use)))
 	_out.append("Journey %d%% complete. Thrust %s, rations %s." % [int(100.0 * GameState.distance_travelled() / GameState.total_distance()), GameState.thrust, GameState.rations])
 	var res: Array = []
 	for key in GameState.RESOURCE_KEYS:

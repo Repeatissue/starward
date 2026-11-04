@@ -38,7 +38,9 @@ func is_choice_available(choice: Dictionary) -> bool:
 	return _requirements_met(choice.get("requires", {}))
 
 
-## Button text, prefixed with what the choice needs, e.g. "[Medic] Treat them".
+## Button text, prefixed with what the choice needs and followed by a risk hint, e.g.
+## "[Medic] Treat them" or "Answer the call.  (it might be a trap)".
+## Gambles (choices with random outcomes) always get a hint so risks never feel hidden.
 func choice_label(choice: Dictionary) -> String:
 	var req: Dictionary = choice.get("requires", {})
 	var prefix := ""
@@ -46,8 +48,11 @@ func choice_label(choice: Dictionary) -> String:
 		prefix += "[%s] " % req["role"]
 	if req.has("resources"):
 		for key in req["resources"]:
-			prefix += "[%d %s] " % [int(req["resources"][key]), GameState.RESOURCE_NAMES.get(key, key)]
-	return prefix + str(choice["text"])
+			prefix += "[needs %d %s] " % [int(req["resources"][key]), GameState.RESOURCE_NAMES.get(key, key)]
+	var hint: String = choice.get("hint", "")
+	if hint == "" and choice.has("outcomes"):
+		hint = "uncertain outcome"
+	return prefix + str(choice["text"]) + ("   (%s)" % hint if hint != "" else "")
 
 
 ## Applies the choice (or one of its weighted outcomes).

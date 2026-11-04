@@ -41,7 +41,7 @@ func _draw() -> void:
 	var sub := "%s  ·  %s" % [data["role"], data["trait"]] if alive else "%s  ·  lost" % data["role"]
 	var sub_col := role_col if alive else UIKit.DIM
 	if alive and sick != "":
-		sub = "%s  ·  SICK: %s" % [data["role"], sick]
+		sub = "SICK: %s" % sick
 		sub_col = UIKit.BAD
 	draw_string(font, Vector2(x, 35), sub, HORIZONTAL_ALIGNMENT_LEFT, w, 13, sub_col)
 	if alive:

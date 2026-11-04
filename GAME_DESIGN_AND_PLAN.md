@@ -147,9 +147,11 @@ All the knobs are constants at the top of `core/TravelSim.gd` plus the credits i
 
 | Captain | Thinking bot wins | Random bot wins |
 |---|---|---|
-| Corporate Pilot (Easy) | ~70% | ~32% |
-| Ex-Navy Officer (Medium) | ~56% | ~20% |
-| Reformed Smuggler (Hard) | ~25% | ~7% |
+| Corporate Pilot (Easy) | ~63% | ~38% |
+| Ex-Navy Officer (Medium) | ~45% | ~25% |
+| Reformed Smuggler (Hard) | ~31% | ~11% |
+
+Hazard, derelict and waypoint stops draw a random event from a pool each run (seeded), so no two journeys meet the same hazards. Travel pauses with a warning whenever fuel, food, oxygen or power drops below 3 days. Every gamble shows a hint of its risk.
 
 Human players will do better than the thinking bot once they learn the game, but a careless run should usually fail.
 

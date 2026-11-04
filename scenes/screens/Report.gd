@@ -56,8 +56,13 @@ func build() -> void:
 			ev.add_child(UIKit.para(line, 17))
 		epi.add_child(ev)
 		col.add_child(epi)
-		col.add_child(UIKit.title("SCORE  %d" % GameState.score(), 34, UIKit.ACCENT))
-		col.add_child(UIKit.label("%s  x%s" % [GameState.background.get("name", "?"), str(GameState.background.get("score_mult", 1))], 16, UIKit.DIM))
+	col.add_child(UIKit.title("SCORE  %d" % GameState.score(), 34, UIKit.ACCENT))
+	var mult := str(GameState.background.get("score_mult", 1))
+	if win:
+		col.add_child(UIKit.para("Colonists x10, surviving crew x200, hull x2, credits / 10, then x%s for %s." % [mult, GameState.background.get("name", "?")], 15, UIKit.DIM))
+	else:
+		col.add_child(UIKit.para("Journey %d%% complete: up to 1,000 points for distance, then x%s for %s. Reach Earth 2 for the full score." % [
+			int(GameState.journey_fraction() * 100.0), mult, GameState.background.get("name", "?")], 15, UIKit.DIM))
 
 	col.add_child(UIKit.spacer(10))
 	var row := UIKit.hbox()

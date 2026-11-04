@@ -19,7 +19,7 @@ func build() -> void:
 
 	col.add_child(UIKit.title("STARWARD", 78, UIKit.ACCENT))
 	col.add_child(UIKit.title("THE LONG HAUL TO EARTH 2", 20, UIKit.INFO))
-	col.add_child(UIKit.para("200 colonists asleep in the hold. 48 light-units of dark between you and a new home. One second-hand ship.", 20, UIKit.DIM))
+	col.add_child(UIKit.para("200 colonists asleep in the hold. Seven weeks of dark between you and a new home. One second-hand ship.", 20, UIKit.DIM))
 	col.add_child(UIKit.spacer(18))
 
 	var new_btn := UIKit.primary_button("NEW JOURNEY", func(): goto("new_run"), 340)

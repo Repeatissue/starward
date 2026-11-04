@@ -35,6 +35,13 @@ func _ready() -> void:
 	main.current.add_child(popup)
 	await _shot("5_event")
 
+	popup.queue_free()
+	var alert := EventPopup.new()
+	alert.setup({"id": "_alert", "notice": true, "art": "ship", "title": "Warning, Captain",
+		"text": "Day 16. Food is running low: about 2 days left at this rate.\n\nTravel has paused so you can react: change rations or thrust, or plan your next stop."}, func(): pass)
+	main.current.add_child(alert)
+	await _shot("5b_alert")
+
 	GameState.add_resource("hull", -65.0)
 	GameState.rations = "reduced"
 	GameState.thrust = "overdrive"
@@ -44,6 +51,12 @@ func _ready() -> void:
 	GameState.end_run(true, "Day %d. The ISV Wayfarer settles into orbit above Earth 2. %d colonists wake to a new sky." % [GameState.day, GameState.colonists])
 	main.goto("report")
 	await _shot("7_report")
+
+	GameState.new_run(99, Data.backgrounds[2])
+	GameState.node_index = 7
+	GameState.end_run(false, "The last of your crew is gone. The ISV Wayfarer drifts on, silent, its sleepers never to wake.")
+	main.goto("report")
+	await _shot("8_loss")
 	get_tree().quit()
 
 

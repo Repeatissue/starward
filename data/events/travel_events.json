@@ -9,7 +9,7 @@
 		"choices": [
 			{ "text": "Give her a bunk. One more mouth to feed.", "effects": { "add_crew": { "name": "Mira", "role": "Stowaway", "trait": "Scrappy" }, "food": -10 }, "result": "Mira eats like she hasn't in weeks. Then she fixes the galley dispenser that nobody else could." },
 			{ "text": "Sedate her and put her in an empty cryo pod.", "requires": { "role": "Medic" }, "effects": { "colonists": 1, "power": -2 }, "result": "She'll wake up on Earth 2 with no memory of the trip. Maybe that's a kindness." },
-			{ "text": "Hand her over at the next station for the bounty.", "effects": { "credits": 50, "crew_morale": -6 }, "result": "Fifty credits. The crew avoids your eyes for days." }
+			{ "text": "Call a patrol cutter and claim the bounty.", "effects": { "credits": 50, "crew_morale": -6 }, "result": "A patrol cutter takes her away and wires you fifty credits. The crew avoids your eyes for days." }
 		]
 	},
 	{
@@ -21,7 +21,7 @@
 		"text": "Proximity alarms scream. A cloud of sand-sized debris is moving faster than any bullet, and it's directly ahead.",
 		"choices": [
 			{ "text": "Divert power to the deflectors.", "effects": { "power": -10 }, "result": "The deflectors glow white. The swarm passes like rain on a window." },
-			{ "text": "Brace and ride it out.", "outcomes": [
+			{ "text": "Brace and ride it out.", "hint": "may cause damage and injuries", "outcomes": [
 				{ "weight": 6, "effects": { "hull": -8 }, "result": "It sounds like hail on a tin roof. Minor damage." },
 				{ "weight": 4, "effects": { "hull": -20, "injure_random": 15 }, "result": "A fragment punches clean through the mess deck." }
 			] },
@@ -59,9 +59,9 @@
 		"sector": [2, 3],
 		"weight": 8,
 		"title": "Distress Call",
-		"text": "A weak signal on an emergency band: \"...anyone... life support failing... please...\"",
+		"text": "A weak signal on an emergency band: \"...anyone... life support failing... please...\" Oddly, the transmitter is broadcasting at full military strength.",
 		"choices": [
-			{ "text": "Answer the call.", "outcomes": [
+			{ "text": "Answer the call.", "hint": "it might be a trap", "outcomes": [
 				{ "weight": 5, "effects": { "food": -15, "crew_morale": 10, "credits": 150 }, "result": "A starving mining family. You share your food, and they pay you with everything they have." },
 				{ "weight": 3, "effects": { "hull": -15, "credits": -100 }, "result": "It's a pirate lure. You blast free, with less hull and fewer credits." },
 				{ "weight": 2, "effects": { "add_crew": { "name": "Okafor", "role": "Engineer", "trait": "Grateful" } }, "result": "There's one survivor, an engineer who insists on working off the debt." }
@@ -92,7 +92,7 @@
 		"text": "Shouting from the galley. Two of your crew are at each other's throats over the last coffee pouch.",
 		"choices": [
 			{ "text": "Have Security break it up.", "requires": { "role": "Security" }, "effects": { "crew_morale": -2 }, "result": "Order is restored. Grudges are not." },
-			{ "text": "Let them settle it.", "effects": { "injure_random": 20, "crew_morale": 5 }, "result": "Black eyes, then a grudging handshake. Oddly, the mood improves." },
+			{ "text": "Let them settle it.", "hint": "someone will get hurt", "effects": { "injure_random": 20, "crew_morale": 5 }, "result": "Black eyes, then a grudging handshake. Oddly, the mood improves." },
 			{ "text": "Double rations tonight to cool tempers.", "requires": { "resources": { "food": 10 } }, "effects": { "food": -10, "crew_morale": 8 }, "result": "Full bellies make for quieter halls." }
 		]
 	},
@@ -117,8 +117,8 @@
 		"title": "Void Fever",
 		"text": "A crew member wakes burning hot, muttering that the stars are watching them.",
 		"choices": [
-			{ "text": "Treat them in the med bay.", "requires": { "role": "Medic" }, "effects": { "power": -3 }, "result": "The fever breaks after a long night." },
-			{ "text": "Quarantine them and hope.", "outcomes": [
+			{ "text": "Treat them in the med bay.", "requires": { "role": "Medic" }, "effects": { "power": -3 }, "result": "The med bay's machines run all night on ship power, and by morning the fever breaks." },
+			{ "text": "Quarantine them and hope.", "hint": "without treatment, it may spread", "outcomes": [
 				{ "weight": 6, "effects": { "injure_random": 35 }, "result": "The fever breaks, but it leaves them weak." },
 				{ "weight": 4, "effects": { "crew_health": -12 }, "result": "It spreads before it fades." }
 			] }

@@ -5,7 +5,7 @@
 		"nodes": [
 			{ "name": "Luna Orbital Dock", "type": "station", "distance": 0, "description": "Home of the Long Haul Initiative. Last chance for fair prices." },
 			{ "name": "Mars Freeport", "type": "station", "distance": 4, "description": "Red dust on every surface, and merchants who know you can't turn back." },
-			{ "name": "The Belt", "type": "hazard", "distance": 4, "event": "belt_crossing" },
+			{ "name": "Hazard", "type": "hazard", "distance": 4, "pool": "hazard" },
 			{ "name": "Ceres Relay", "type": "station", "distance": 3, "description": "The last station with a Sol flag flying over it." }
 		]
 	},
@@ -13,25 +13,25 @@
 		"id": 2,
 		"name": "The Kuiper Frontier",
 		"nodes": [
-			{ "name": "Drifting Wreck", "type": "derelict", "distance": 4, "event": "drift_wreck" },
+			{ "name": "Derelict", "type": "derelict", "distance": 4, "pool": "derelict" },
 			{ "name": "Nix Haven", "type": "station", "distance": 5, "event": "nix_haven_toll", "description": "A pirate haven carved into an ice moon. Everything is for sale." },
-			{ "name": "Kuiper Ion Storm", "type": "hazard", "distance": 4, "event": "ion_storm" }
+			{ "name": "Hazard", "type": "hazard", "distance": 4, "pool": "hazard" }
 		]
 	},
 	{
 		"id": 3,
 		"name": "The Deep Dark",
 		"nodes": [
-			{ "name": "The Long Silence", "type": "waypoint", "distance": 6, "event": "long_silence" },
+			{ "name": "Waypoint", "type": "waypoint", "distance": 6, "pool": "waypoint" },
 			{ "name": "Lantern Waystation", "type": "station", "distance": 5, "event": "customs_inspection", "description": "A monastery-station. The monks trade supplies and ask nothing but your story." },
-			{ "name": "Ghost Signal", "type": "derelict", "distance": 5, "event": "ghost_signal" }
+			{ "name": "Derelict", "type": "derelict", "distance": 5, "pool": "derelict" }
 		]
 	},
 	{
 		"id": 4,
 		"name": "The Approach",
 		"nodes": [
-			{ "name": "Twin Suns Gravity Well", "type": "hazard", "distance": 4, "event": "gravity_well" },
+			{ "name": "Hazard", "type": "hazard", "distance": 4, "pool": "hazard" },
 			{ "name": "Earth 2", "type": "destination", "distance": 4 }
 		]
 	}

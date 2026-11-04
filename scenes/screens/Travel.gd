@@ -7,9 +7,9 @@ const METERS := [
 	["credits", "Credits", 1.0], ["colonists", "Colonists", 200.0],
 ]
 const THRUST_TIPS := {
-	"cruise": "Cruise: 1 light-unit a day, 2 fuel a day.\nSlow but easy on the ship.",
-	"burn": "Burn: 1.5 light-units a day, 4 fuel a day.\nA little hard on morale.",
-	"overdrive": "Overdrive: 2 light-units a day, 7 fuel a day.\nDamages the hull and strains the crew.",
+	"cruise": "Cruise: normal speed, 2 fuel a day.\nSlow but easy on the ship.",
+	"burn": "Burn: 1.5x speed (trips take 2/3 the days), 4 fuel a day.\nA little hard on morale; slightly more illness and breakdowns.",
+	"overdrive": "Overdrive: 2x speed (trips take half the days), 7 fuel a day.\nDamages the hull, strains the crew, more illness and breakdowns.",
 }
 const RATION_TIPS := {
 	"full": "Full: 1 food per crew member a day.\nThe crew slowly heals.",
@@ -180,6 +180,10 @@ func _on_travel() -> void:
 	match result.get("type", ""):
 		"event":
 			_show_event(result["event"])
+		"alert":
+			SaveManager.save_game()
+			_show_event({"id": "_alert", "notice": true, "art": "ship", "title": "Warning, Captain",
+				"text": str(result["text"]) + "\n\nTravel has paused so you can react: change rations or thrust, or plan your next stop."})
 		"ended":
 			goto("report")
 		_:
@@ -257,7 +261,7 @@ func _update_meters() -> void:
 				meter.set_data(GameState.get_res("parts"), "Used for emergency repairs", false)
 			"fuel":
 				var fuel_days := GameState.days_left("fuel")
-				meter.set_data(GameState.get_res("fuel"), "~%d days of thrust (%d light-units)" % [int(fuel_days), int(fuel_days * GameState.speed())], fuel_days < 5.0)
+				meter.set_data(GameState.get_res("fuel"), "~%d days of thrust at %s" % [int(fuel_days), GameState.THRUST[GameState.thrust]["name"]], fuel_days < 5.0)
 			_:
 				var dl := GameState.days_left(key)
 				meter.set_data(GameState.get_res(key), "Lasts ~%d days" % int(dl), dl < 6.0)

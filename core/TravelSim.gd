@@ -24,18 +24,30 @@ const RECOVERY_FULL_RATIONS := 0.05
 const BREAKDOWN_BASE := 0.02
 const BREAKDOWN_BY_THRUST := {"cruise": 0.0, "burn": 0.01, "overdrive": 0.03}
 
-const ILLNESSES := ["radiation sickness", "void fever", "bone-loss syndrome", "station flu", "a broken arm", "infected burns", "decompression sickness"]
+const ILLNESSES := ["radiation sickness", "void fever", "bone loss", "station flu", "a broken arm", "infected burns", "the bends"]
 const SYSTEMS := ["main thruster coupling", "reactor coolant pump", "navigation computer", "hull pressure seal", "cryo bay regulator", "water reclaimer", "airlock motor"]
+
+## Travel pauses with a warning when a vital supply drops below this many days.
+const LOW_SUPPLY_DAYS := 3.0
 
 var _warned: Dictionary = {}
 var _repairing := false
+var _alert := ""
+
+
+## Clears per-run warning state. Called when a run starts or loads.
+func reset() -> void:
+	_warned.clear()
+	_alert = ""
 
 
 ## Advances day by day until something needs the player.
-## Returns {"type": "event", "event": {...}}, {"type": "arrived"}, {"type": "ended"} or {"type": "pause"}.
+## Returns {"type": "event", "event": {...}}, {"type": "arrived"}, {"type": "ended"},
+## {"type": "alert", "text": ...} (a supply ran low or out: the player should react) or {"type": "pause"}.
 func travel() -> Dictionary:
 	if GameState.ended or GameState.next_node().is_empty():
 		return {"type": "ended"}
+	_alert = ""
 	for i in MAX_DAYS_PER_PRESS:
 		_tick_day(true)
 		if GameState.ended:
@@ -43,6 +55,10 @@ func travel() -> Dictionary:
 		var nxt := GameState.next_node()
 		if GameState.progress >= float(nxt["distance"]):
 			return _arrive()
+		if _alert != "":
+			var text := _alert
+			_alert = ""
+			return {"type": "alert", "text": text}
 		var ev := EventEngine.roll_travel_event()
 		if not ev.is_empty():
 			return {"type": "event", "event": ev}
@@ -123,7 +139,21 @@ func _tick_day(moving: bool) -> void:
 	_roll_illness()
 	if not _repairing:
 		_roll_breakdown()
+	_check_low_supplies()
 	GameState.check_end_conditions()
+
+
+## Warn (and pause travel) once when a vital supply falls below a few days' worth.
+func _check_low_supplies() -> void:
+	for key in ["fuel", "food", "oxygen", "power"]:
+		var dl := GameState.days_left(key)
+		var id: String = "low_" + key
+		if GameState.get_res(key) <= 0.0:
+			continue  # the "empty" warning covers this
+		if dl < LOW_SUPPLY_DAYS:
+			_warn(id, "%s is running low: about %d days left at this rate." % [GameState.RESOURCE_NAMES[key], int(dl)])
+		elif dl >= LOW_SUPPLY_DAYS + 2.0:
+			_clear_warning(id)
 
 
 ## Like dysentery on the old trail, illness is the steady killer out here.
@@ -199,6 +229,8 @@ func _warn(id: String, text: String) -> void:
 	if not _warned.get(id, false):
 		_warned[id] = true
 		GameState.add_log("Day %d. %s" % [GameState.day, text])
+		if _alert == "":
+			_alert = "Day %d. %s" % [GameState.day, text]
 
 
 func _clear_warning(id: String) -> void:
