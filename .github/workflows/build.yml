@@ -1,0 +1,104 @@
+name: Test & Build
+
+# On every push to main (and on pull requests):
+#   1. Run the headless balance sim + UI smoke test.
+#   2. Export Web, Windows and Linux builds (downloadable from the run page).
+#   3. Publish the Web build to GitHub Pages (public repos only) so it can be played in a browser.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  GODOT_VERSION: "4.7.2"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Godot
+        run: |
+          wget -q "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" -O godot.zip
+          unzip -q godot.zip -d "$HOME/godot"
+          mv "$HOME/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" "$HOME/godot/godot"
+          echo "$HOME/godot" >> "$GITHUB_PATH"
+
+      - name: Import project
+        run: godot --headless --path . --import
+
+      - name: Balance sim + UI smoke test
+        run: |
+          godot --headless --path . res://tools/balance_sim.tscn 2>&1 | tee sim.log
+          {
+            echo '### Balance sim'
+            echo '```'
+            grep -v '^$' sim.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if grep -qE "SCRIPT ERROR|Parse Error|ERROR:" sim.log; then echo "::error::Script errors found"; exit 1; fi
+          grep -q "UI smoke test: all screens built" sim.log
+
+  export:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Godot + export templates
+        run: |
+          base="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
+          wget -q "$base/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" -O godot.zip
+          unzip -q godot.zip -d "$HOME/godot"
+          mv "$HOME/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" "$HOME/godot/godot"
+          echo "$HOME/godot" >> "$GITHUB_PATH"
+          wget -q "$base/Godot_v${GODOT_VERSION}-stable_export_templates.tpz" -O templates.tpz
+          dest="$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+          mkdir -p "$dest"
+          unzip -q templates.tpz -d tpl
+          mv tpl/templates/* "$dest/"
+
+      - name: Import project
+        run: godot --headless --path . --import
+
+      - name: Export builds
+        run: |
+          mkdir -p build/web build/windows build/linux
+          godot --headless --path . --export-release "Web" build/web/index.html
+          godot --headless --path . --export-release "Windows" build/windows/Starward.exe
+          godot --headless --path . --export-release "Linux" build/linux/Starward.x86_64
+          ls -R build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Starward-Windows
+          path: build/windows
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Starward-Linux
+          path: build/linux
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Starward-Web
+          path: build/web
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name == 'push' && github.event.repository.private == false
+        with:
+          path: build/web
+
+  deploy-web:
+    needs: export
+    if: github.event_name == 'push' && github.event.repository.private == false
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
