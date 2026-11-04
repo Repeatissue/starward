@@ -10,7 +10,8 @@ extends Node
 ##   buy <item> [packs]   / sell <item> [packs]    items: fuel food oxygen power parts hull (stations only)
 ##   thrust <cruise|burn|overdrive>
 ##   rations <full|reduced|starvation>
-##   travel                                 fly until an event, an arrival or 30 days pass
+##   go <n>                                 pick the next stop on the star map (when ROUTE OPTIONS show)
+##   travel                                 fly until an event, an arrival, a warning or 30 days pass
 ##   choose <n>                             answer the pending event (1-based)
 
 var _path := ""
@@ -86,6 +87,21 @@ func _run(cmd: String, rest: Array) -> void:
 				_pending = result["event"]["id"]
 			elif result.get("type", "") == "alert":
 				_say("WARNING - travel paused: " + str(result["text"]))
+			elif result.get("type", "") == "choose":
+				_say("Choose your next stop first: go <n> (see ROUTE OPTIONS).")
+		"go":
+			if _pending != "":
+				_say("Answer the event first (choose <n>).")
+				return
+			var options := GameState.route_options()
+			var n: int = int(rest[0]) if rest.size() > 0 else 0
+			if options.is_empty():
+				_say("Your course is already set. Use travel.")
+			elif n < 1 or n > options.size():
+				_say("Pick a route from 1 to %d." % options.size())
+			else:
+				GameState.choose_route(options[n - 1]["id"])
+				_say("Course set for %s." % options[n - 1]["name"])
 		"choose":
 			if _pending == "":
 				_say("There is no event to answer.")
@@ -209,6 +225,20 @@ func _print_state() -> void:
 			_out.append("  %d. %s%s" % [n, EventEngine.choice_label(choice), "" if ok else "   (UNAVAILABLE)"])
 			n += 1
 		_out.append("Answer with: choose <n>")
+	elif GameState.needs_route_choice():
+		_out.append("\n*** ROUTE OPTIONS (choose with: go <n>) ***")
+		var i := 1
+		for opt in GameState.route_options():
+			var d := ceili(float(opt["distance"]) / GameState.speed())
+			var onward: Array = []
+			for nid in opt.get("next", []):
+				onward.append(str(GameState.map_node(nid).get("name", "?")))
+			var extra := ""
+			if opt["type"] == "station":
+				extra = ", can trade (prices +%d%%)" % int(25 * int(opt["sector"]))
+			_out.append("  %d. %s - %s, %s away%s. Leads on to: %s" % [i, opt["name"], str(opt["type"]).to_upper(), GameState.days(d), extra, ", ".join(PackedStringArray(onward))])
+			i += 1
+		_out.append("Hazards are shortcuts but dangerous; stations are detours where you can resupply.")
 	else:
 		_out.append("Next: travel (or change thrust/rations, or trade if docked).")
 

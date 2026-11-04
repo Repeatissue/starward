@@ -42,6 +42,12 @@ jobs:
           if grep -qE "SCRIPT ERROR|Parse Error|ERROR:" sim.log; then echo "::error::Script errors found"; exit 1; fi
           grep -q "UI smoke test: all screens built" sim.log
 
+      - name: Remote-only navigation test (Apple TV / gamepad)
+        run: |
+          godot --headless --path . res://tools/nav_test.tscn 2>&1 | tee nav.log
+          { echo '### Navigation test'; echo '```'; grep -E "ok\]|FAIL|NAV TEST" nav.log; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          grep -q "NAV TEST: PASS" nav.log
+
   export:
     needs: test
     runs-on: ubuntu-latest

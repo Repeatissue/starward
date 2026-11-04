@@ -41,7 +41,9 @@ func _simulate(bg: Dictionary, policy: String) -> void:
 			guard += 1
 			_set_rations()
 			var result := TravelSim.travel()
-			if result.get("type", "") == "event":
+			if result.get("type", "") == "choose":
+				_pick_route(policy)
+			elif result.get("type", "") == "event":
 				_pick_choice(result["event"], policy)
 			elif result.get("type", "") == "arrived" and GameState.current_node()["type"] == "station":
 				_shop()
@@ -105,6 +107,32 @@ func _set_rations() -> void:
 		GameState.rations = "reduced"
 		if GameState.days_left("food") < days_needed:
 			GameState.rations = "starvation"
+
+
+## random: any route. smart: shortest overall path, but heads for a station when supplies or
+## hull won't comfortably last, and avoids hazards when the hull is weak.
+func _pick_route(policy: String) -> void:
+	var options := GameState.route_options()
+	var pick: Dictionary = RNG.pick(options)
+	if policy == "smart":
+		var best := -INF
+		for opt in options:
+			var days := float(opt["distance"]) / GameState.speed()
+			var score := -(float(opt["distance"]) + GameState.remaining_from(opt["id"])) * 10.0
+			var needy := false
+			for key in ["fuel", "food", "oxygen", "power"]:
+				if GameState.days_left(key) - days < 8.0:
+					needy = true
+			if opt["type"] == "station" and (needy or GameState.get_res("hull") < 60.0) and GameState.get_res("credits") > 60.0:
+				score += 120.0
+			if opt["type"] == "hazard" and GameState.get_res("hull") < 50.0:
+				score -= 80.0
+			if opt["type"] == "derelict":
+				score += 15.0
+			if score > best:
+				best = score
+				pick = opt
+	GameState.choose_route(pick["id"])
 
 
 func _pick_choice(ev: Dictionary, policy: String) -> void:
@@ -172,6 +200,11 @@ func _smoke_test_ui() -> void:
 	for screen in ["menu", "new_run", "outfitter", "travel"]:
 		main.goto(screen, {"mode": "departure"})
 		await get_tree().process_frame
+	var chooser := RouteChooser.new()
+	chooser.setup(func(): pass, func(): pass)
+	main.current.add_child(chooser)
+	await get_tree().process_frame
+	chooser.queue_free()
 	var popup := EventPopup.new()
 	popup.setup(Data.events[0], func(): pass)
 	main.current.add_child(popup)

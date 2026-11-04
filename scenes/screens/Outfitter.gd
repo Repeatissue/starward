@@ -72,6 +72,11 @@ func build() -> void:
 	bottom.add_child(go)
 	root.add_child(bottom)
 	_refresh()
+	go.grab_focus()
+
+
+func on_back() -> void:
+	_leave()
 
 
 func _make_card(item: Dictionary) -> Control:

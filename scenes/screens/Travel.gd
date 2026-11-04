@@ -17,6 +17,11 @@ const RATION_TIPS := {
 	"starvation": "Starvation: 0.25 food per crew member a day.\nThe crew loses health fast.",
 }
 const STARFIELD_SPEED := {"cruise": 14.0, "burn": 24.0, "overdrive": 38.0}
+## Always-visible one-line effect of the current setting (tooltips don't exist on touch or TV).
+const THRUST_SHORT := {"cruise": "normal speed, 2 fuel/day", "burn": "1.5x speed, 4 fuel/day", "overdrive": "2x speed, 7 fuel/day, hull wear"}
+const RATION_SHORT := {"full": "crew heal", "reduced": "morale drops", "starvation": "health drops fast"}
+
+var _group_heads: Dictionary = {}
 
 var _meters: Dictionary = {}
 var _crew_box: VBoxContainer
@@ -31,6 +36,7 @@ var _log: RichTextLabel
 var _travel_btn: Button
 var _trade_btn: Button
 var _popup: EventPopup = null
+var _chooser: RouteChooser = null
 var _shown_log := 0
 
 
@@ -52,7 +58,7 @@ func build() -> void:
 	# Route map
 	var route_panel := UIKit.panel()
 	_route = RouteMap.new()
-	_route.custom_minimum_size = Vector2(0, 110)
+	_route.custom_minimum_size = Vector2(0, 124)
 	route_panel.add_child(_route)
 	root.add_child(route_panel)
 
@@ -99,7 +105,7 @@ func build() -> void:
 	logbox.add_child(UIKit.heading("CAPTAIN'S LOG"))
 	_log = RichTextLabel.new()
 	_log.scroll_following = true
-	_log.selection_enabled = true
+	_log.focus_mode = Control.FOCUS_NONE  # not a stop for remote/gamepad focus
 	_log.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_log.add_theme_font_size_override("normal_font_size", 15)
 	_log.add_theme_color_override("default_color", Color(UIKit.TEXT, 0.85))
@@ -141,7 +147,11 @@ func build() -> void:
 
 func _toggle_group(title_text: String, options: Dictionary, selected: String, tips: Dictionary, callback: Callable) -> VBoxContainer:
 	var v := UIKit.vbox(4)
-	v.add_child(UIKit.heading(title_text))
+	var head := UIKit.heading(title_text)
+	head.add_theme_font_override("font", UIKit.bold_font())
+	head.clip_text = true
+	_group_heads[title_text] = head
+	v.add_child(head)
 	var row := UIKit.hbox(6)
 	var group := ButtonGroup.new()
 	for key in options:
@@ -166,18 +176,26 @@ func _on_trade() -> void:
 	goto("outfitter", {"mode": "departure" if GameState.node_index == 0 else "station"})
 
 
+func on_back() -> void:
+	if _popup == null and _chooser == null:
+		_on_menu()
+
+
 func _on_menu() -> void:
 	SaveManager.save_game()
 	goto("menu")
 
 
 func _on_travel() -> void:
-	if _popup != null:
+	if _popup != null or _chooser != null:
 		return
-	main.starfield.boost(520.0)
 	var result := TravelSim.travel()
+	if result.get("type", "") != "choose":
+		main.starfield.boost(520.0)
 	_refresh()
 	match result.get("type", ""):
+		"choose":
+			_show_routes()
 		"event":
 			_show_event(result["event"])
 		"alert":
@@ -188,6 +206,26 @@ func _on_travel() -> void:
 			goto("report")
 		_:
 			SaveManager.save_game()
+
+
+func _show_routes() -> void:
+	_chooser = RouteChooser.new()
+	_chooser.setup(_on_route_chosen, _on_route_cancelled)
+	add_child(_chooser)
+
+
+## Course set: close the map and fly straight on (saves the player a press).
+func _on_route_chosen() -> void:
+	_chooser = null
+	SaveManager.save_game()
+	_refresh()
+	_on_travel()
+
+
+func _on_route_cancelled() -> void:
+	_chooser = null
+	_refresh()
+	_travel_btn.grab_focus()
 
 
 func _show_event(ev: Dictionary) -> void:
@@ -211,15 +249,20 @@ func _refresh() -> void:
 	var nxt := GameState.next_node()
 	_day_label.text = "DAY %d" % GameState.day
 	_location_label.text = str(node["name"])
+	var journey := int(100.0 * GameState.journey_fraction())
 	if not nxt.is_empty():
 		var remaining := float(nxt["distance"]) - GameState.progress
-		var days := ceili(remaining / GameState.speed())
-		_next_label.text = "Next: %s in ~%d day%s   |   Journey %d%%" % [
-			nxt["name"], days, "" if days == 1 else "s",
-			int(100.0 * GameState.distance_travelled() / maxf(1.0, GameState.total_distance()))]
+		_next_label.text = "Next: %s in ~%s   |   Journey %d%%" % [
+			nxt["name"], GameState.days(ceili(remaining / GameState.speed())), journey]
+	elif GameState.needs_route_choice():
+		_next_label.text = "Next: choose your route   |   Journey %d%%" % journey
+	_travel_btn.text = "CHART COURSE  >" if GameState.needs_route_choice() else "CONTINUE JOURNEY  >"
 
 	_update_meters()
 	_route.refresh()
+	if _group_heads.has("THRUST"):
+		(_group_heads["THRUST"] as Label).text = "THRUST: " + str(THRUST_SHORT[GameState.thrust]).to_upper()
+		(_group_heads["RATIONS"] as Label).text = "RATIONS: %s FOOD/DAY, %s" % [str(snappedf(GameState.daily_use("food"), 0.1)), str(RATION_SHORT[GameState.rations]).to_upper()]
 	_ship.set_thrust(GameState.thrust)
 	_ship.damaged = GameState.get_res("hull") < 50.0
 	main.starfield.target_speed = STARFIELD_SPEED.get(GameState.thrust, 14.0)
@@ -320,8 +363,13 @@ func _advice() -> Array:
 	if not living.is_empty() and morale_total / living.size() < 25.0:
 		return ["Morale is collapsing. Full rations and a slower pace will help.", "crew", UIKit.ACCENT]
 
-	if GameState.node_index == 0:
-		return ["We're docked at %s. Check our supplies, then press Continue Journey to launch." % node["name"], "station", UIKit.INFO]
-	if at_station:
-		return ["Docked at %s. Trade if we need anything, then press Continue Journey." % node["name"], "station", UIKit.INFO]
+	var docked: bool = at_station and GameState.progress == 0.0
+	if docked and GameState.node_index == 0 and GameState.needs_route_choice():
+		return ["We're docked at %s. Check our supplies, then press Chart Course to plot our first leg." % node["name"], "station", UIKit.INFO]
+	if docked and GameState.needs_route_choice():
+		return ["Docked at %s. Trade if we need anything, then chart our next course." % node["name"], "station", UIKit.INFO]
+	if docked:
+		return ["Course set for %s. Trade if we need anything, then press Continue Journey." % GameState.next_node().get("name", "?"), "station", UIKit.INFO]
+	if GameState.needs_route_choice():
+		return ["We've reached %s. Chart our next course, Captain: the safer routes take longer." % node["name"], "waypoint", UIKit.INFO]
 	return ["All systems steady, Captain. %s is about %s ahead." % [stop_name, GameState.days(days_to_stop)], "waypoint", UIKit.GOOD]

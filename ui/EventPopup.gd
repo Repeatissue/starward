@@ -13,9 +13,13 @@ func setup(ev: Dictionary, closed_callback: Callable) -> void:
 	on_closed = closed_callback
 
 
+var _focus_trap: Array = []
+
+
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	_focus_trap = UIKit.trap_focus(get_parent(), self)
 	var dim := ColorRect.new()
 	dim.color = Color(0.0, 0.01, 0.04, 0.72)
 	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -54,6 +58,7 @@ func _show_choices() -> void:
 	_box.add_child(UIKit.para(event["text"], 19))
 	if event.get("notice", false):
 		# A warning card (e.g. supplies running out): nothing to choose, just acknowledge.
+		event_closable = true
 		var row := UIKit.hbox()
 		row.add_child(UIKit.filler())
 		var ok := UIKit.primary_button("UNDERSTOOD", _close, 220)
@@ -94,13 +99,27 @@ func _choose(choice: Dictionary) -> void:
 		_box.add_child(flow)
 	var row := UIKit.hbox()
 	row.add_child(UIKit.filler())
+	event_closable = true
 	var cont := UIKit.primary_button("CONTINUE", _close, 220)
 	row.add_child(cont)
 	_box.add_child(row)
 	cont.call_deferred("grab_focus")
 
 
+## Back closes warning cards and outcome screens; during a choice it's swallowed so the
+## screen behind doesn't react (you must choose).
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		get_viewport().set_input_as_handled()
+		if event_closable:
+			_close()
+
+
+var event_closable := false
+
+
 func _close() -> void:
+	UIKit.release_focus_trap(_focus_trap)
 	queue_free()
 	if on_closed.is_valid():
 		on_closed.call()

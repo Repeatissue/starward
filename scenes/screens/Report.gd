@@ -77,6 +77,10 @@ func build() -> void:
 	again.grab_focus()
 
 
+func on_back() -> void:
+	goto("menu")
+
+
 func _epilogue() -> Array:
 	var lines: Array = []
 	for role in MISSING_ROLE_EPILOGUES:

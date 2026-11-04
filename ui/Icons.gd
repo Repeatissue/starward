@@ -91,6 +91,14 @@ static func draw(ci: CanvasItem, kind: String, rect: Rect2, color: Color) -> voi
 			ci.draw_colored_polygon(_poly(c, s, [Vector2(0.12, -0.05), Vector2(0.92, 0.12), Vector2(0.82, 0.55), Vector2(0.04, 0.35)]), color.darkened(0.2))
 			ci.draw_circle(c + Vector2(0.05, -0.55) * s, 0.08 * s, color)
 			ci.draw_circle(c + Vector2(-0.2, 0.65) * s, 0.06 * s, color)
+		"quiet":
+			# A few calm stars.
+			for p in [Vector2(-0.35, -0.3), Vector2(0.4, -0.05), Vector2(-0.1, 0.45)]:
+				var sc: Vector2 = c + p * s
+				var rr := 0.28 * s
+				ci.draw_colored_polygon(PackedVector2Array([sc + Vector2(0, -rr), sc + Vector2(rr * 0.3, -rr * 0.3), sc + Vector2(rr, 0),
+					sc + Vector2(rr * 0.3, rr * 0.3), sc + Vector2(0, rr), sc + Vector2(-rr * 0.3, rr * 0.3), sc + Vector2(-rr, 0),
+					sc + Vector2(-rr * 0.3, -rr * 0.3)]), color)
 		"waypoint":
 			ci.draw_polyline(_poly(c, s, [Vector2(0, -0.8), Vector2(0.8, 0), Vector2(0, 0.8), Vector2(-0.8, 0), Vector2(0, -0.8)]), color, w, true)
 			ci.draw_circle(c, 0.2 * s, color)

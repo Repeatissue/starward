@@ -19,10 +19,17 @@ func _ready() -> void:
 
 	for key in {"fuel": 110.0, "food": 200.0, "oxygen": 60.0, "parts": 1.0}.keys():
 		GameState.add_resource(key, {"fuel": 110.0, "food": 200.0, "oxygen": 60.0, "parts": 1.0}[key])
-	GameState.add_resource("credits", -700.0)
-	for i in 4:
+	GameState.add_resource("credits", -600.0)
+	main.goto("travel")
+	var chooser := RouteChooser.new()
+	chooser.setup(func(): pass, func(): pass)
+	main.current.add_child(chooser)
+	await _shot("3b_route_chooser")
+	for i in 6:
 		var r := TravelSim.travel()
-		if r.get("type", "") == "event":
+		if r.get("type", "") == "choose":
+			GameState.choose_route(GameState.route_options()[0]["id"])
+		elif r.get("type", "") == "event":
 			for choice in r["event"]["choices"]:
 				if EventEngine.is_choice_available(choice):
 					EventEngine.resolve_choice(r["event"], choice)
@@ -53,7 +60,20 @@ func _ready() -> void:
 	await _shot("7_report")
 
 	GameState.new_run(99, Data.backgrounds[2])
-	GameState.node_index = 7
+	GameState.add_resource("fuel", 100.0)
+	GameState.add_resource("food", 150.0)
+	for i in 12:
+		var r := TravelSim.travel()
+		if GameState.ended:
+			break
+		if r.get("type", "") == "choose":
+			GameState.choose_route(GameState.route_options()[0]["id"])
+		elif r.get("type", "") == "event":
+			for choice in r["event"]["choices"]:
+				if EventEngine.is_choice_available(choice):
+					EventEngine.resolve_choice(r["event"], choice)
+					break
+	GameState.ended = false
 	GameState.end_run(false, "The last of your crew is gone. The ISV Wayfarer drifts on, silent, its sleepers never to wake.")
 	main.goto("report")
 	await _shot("8_loss")

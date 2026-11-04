@@ -11,7 +11,7 @@
 		"id": "navy",
 		"name": "Ex-Navy Officer",
 		"description": "Discharged with a small pension and a habit of keeping ships in one piece. Starts with 2 spare parts.",
-		"credits": 700,
+		"credits": 680,
 		"score_mult": 2.0, "difficulty": "Medium",
 		"bonus": { "parts": 2 }
 	},
@@ -19,7 +19,7 @@
 		"id": "smuggler",
 		"name": "Reformed Smuggler",
 		"description": "You know every back channel between here and the Kuiper Belt, and you have almost nothing to your name. Starts with 30 fuel and 30 food. A hard start with a big reward.",
-		"credits": 570,
+		"credits": 530,
 		"score_mult": 3.0, "difficulty": "Hard",
 		"bonus": { "fuel": 30, "food": 30 }
 	}

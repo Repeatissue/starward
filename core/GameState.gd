@@ -49,6 +49,9 @@ var day: int = 0
 var resources: Dictionary = {}
 var colonists: int = 0
 var crew: Array = []
+## The whole branching map for this run (see Data.build_map), and the stops actually taken.
+## route[node_index] is where the ship is; route[node_index + 1] (if any) is the chosen next stop.
+var star_map: Dictionary = {}
 var route: Array = []
 var node_index: int = 0
 var progress: float = 0.0
@@ -80,7 +83,8 @@ func new_run(p_seed: int, bg: Dictionary) -> void:
 		var name_text: String = names.pop_at(RNG.range_i(0, names.size() - 1))
 		var trait_text: String = RNG.pick(TRAITS)
 		crew.append(_make_crew(name_text, role, trait_text, 70.0))
-	route = Data.build_route()
+	star_map = Data.build_map()
+	route = [map_node(star_map["start"]).duplicate(true)]
 	TravelSim.reset()
 	node_index = 0
 	progress = 0.0
@@ -128,11 +132,70 @@ func current_sector() -> int:
 	return int(current_node().get("sector", 1))
 
 
+func map_node(id: String) -> Dictionary:
+	return star_map.get("nodes", {}).get(id, {})
+
+
+## The stops you can head for next. Empty once a course is set (or at Earth 2).
+func route_options() -> Array:
+	if not next_node().is_empty():
+		return []
+	var out: Array = []
+	for id in current_node().get("next", []):
+		out.append(map_node(id))
+	return out
+
+
+func needs_route_choice() -> bool:
+	return route_options().size() > 1
+
+
+func choose_route(id: String) -> void:
+	if not next_node().is_empty():
+		return
+	var n := map_node(id)
+	if n.is_empty() or not (id in current_node().get("next", [])):
+		return
+	route.append(n.duplicate(true))
+	add_log("Day %d. Course set for %s." % [day, n["name"]])
+	changed.emit()
+
+
+## Shortest distance from a stop to Earth 2 (not counting the stop itself).
+func remaining_from(id: String) -> float:
+	var n := map_node(id)
+	var best := INF
+	for nid in n.get("next", []):
+		best = minf(best, float(map_node(nid)["distance"]) + remaining_from(nid))
+	return 0.0 if best == INF else best
+
+
+## Nearest resupply (station or Earth 2) reachable from a stop: {"name", "distance"}.
+func nearest_stop_from(id: String) -> Dictionary:
+	var best := {"name": "Earth 2", "distance": INF}
+	for nid in map_node(id).get("next", []):
+		var nn := map_node(nid)
+		var d := float(nn["distance"])
+		var cand := {"name": nn["name"], "distance": d}
+		if not (nn["type"] in ["station", "destination"]):
+			var further := nearest_stop_from(nid)
+			cand = {"name": further["name"], "distance": d + float(further["distance"])}
+		if float(cand["distance"]) < float(best["distance"]):
+			best = cand
+	if best["distance"] == INF:
+		best["distance"] = 0.0
+	return best
+
+
+## Journey length so far plus the shortest way from here to Earth 2.
 func total_distance() -> float:
 	var total := 0.0
-	for n in route:
-		total += float(n.get("distance", 0.0))
-	return total
+	for i in range(1, node_index + 1):
+		total += float(route[i].get("distance", 0.0))
+	var nxt := next_node()
+	if nxt.is_empty():
+		return total + remaining_from(str(current_node().get("id", "")))
+	return total + float(nxt["distance"]) + remaining_from(str(nxt["id"]))
 
 
 func distance_travelled() -> float:
@@ -142,14 +205,16 @@ func distance_travelled() -> float:
 	return total
 
 
-## The next stop where you can resupply (a station or Earth 2), and how far away it is.
+## The nearest stop where you can resupply (a station or Earth 2), and how far away it is.
 func next_stop() -> Dictionary:
-	var dist := -progress
-	for i in range(node_index + 1, route.size()):
-		dist += float(route[i].get("distance", 0.0))
-		if route[i]["type"] in ["station", "destination"]:
-			return {"name": route[i]["name"], "distance": maxf(dist, 0.0)}
-	return {"name": "Earth 2", "distance": maxf(dist, 0.0)}
+	var nxt := next_node()
+	if nxt.is_empty():
+		return nearest_stop_from(str(current_node().get("id", "")))
+	var d := maxf(float(nxt["distance"]) - progress, 0.0)
+	if nxt["type"] in ["station", "destination"]:
+		return {"name": nxt["name"], "distance": d}
+	var further := nearest_stop_from(str(nxt["id"]))
+	return {"name": further["name"], "distance": d + float(further["distance"])}
 
 
 # --- Supplies forecast ---------------------------------------------------
@@ -283,6 +348,7 @@ func to_dict() -> Dictionary:
 		"resources": resources,
 		"colonists": colonists,
 		"crew": crew,
+		"star_map": star_map,
 		"route": route,
 		"node_index": node_index,
 		"progress": progress,
@@ -304,6 +370,7 @@ func from_dict(d: Dictionary) -> void:
 	resources = d.get("resources", BASE_RESOURCES.duplicate())
 	colonists = int(d.get("colonists", 0))
 	crew = d.get("crew", [])
+	star_map = d.get("star_map", {})
 	route = d.get("route", [])
 	node_index = int(d.get("node_index", 0))
 	progress = float(d.get("progress", 0.0))

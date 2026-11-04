@@ -12,10 +12,15 @@ Every push to `main` runs the balance sim and smoke test, exports Web/Windows/Li
 1. Open Godot 4.7 → **Import** → choose this folder's `project.godot`.
 2. Press **F5** (Run Project).
 
-Headless balance simulator and smoke test (auto-plays 300 runs, then builds every screen):
+Tools:
 ```
-godot --headless --path . res://tools/balance_sim.tscn
+godot --headless --path . res://tools/balance_sim.tscn   # 1,200 bot runs (random vs smart) + UI smoke test
+godot --headless --path . res://tools/nav_test.tscn      # plays with only arrows/select/back (Apple TV, gamepad)
+godot --path . res://tools/screenshots.tscn              # saves every screen to screenshots/
+godot --path . res://tools/perf_probe.tscn               # per-screen frame time and draw calls
+.\tools\play.ps1 <save.json> new navy 42                 # text-mode play, one command per call (new/status/buy/sell/thrust/rations/go/travel/choose)
 ```
+Set `STARWARD_TV=1` to preview the Apple TV layout (title-safe margins, no text entry) on a desktop.
 
 ## Layout
 ```

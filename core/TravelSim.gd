@@ -45,13 +45,21 @@ func reset() -> void:
 
 ## Advances day by day until something needs the player.
 ## Returns {"type": "event", "event": {...}}, {"type": "arrived"}, {"type": "ended"},
-## {"type": "alert", "text": ...} (a supply ran low or out: the player should react) or {"type": "pause"}.
+## {"type": "alert", "text": ...} (a supply ran low or out: the player should react),
+## {"type": "choose"} (the player must pick the next stop on the star map) or {"type": "pause"}.
 func travel() -> Dictionary:
-	if GameState.ended or GameState.next_node().is_empty():
+	if GameState.ended:
 		return {"type": "ended"}
 	# A warning that fired on the same day as an arrival or event is shown now, before flying on.
 	if _alert != "":
 		return _take_alert()
+	if GameState.next_node().is_empty():
+		var options := GameState.route_options()
+		if options.is_empty():
+			return {"type": "ended"}
+		if options.size() > 1:
+			return {"type": "choose"}
+		GameState.choose_route(options[0]["id"])  # only one way on: no choice to make
 	for i in MAX_DAYS_PER_PRESS:
 		_tick_day(true)
 		if GameState.ended:

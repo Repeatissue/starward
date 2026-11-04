@@ -2,37 +2,58 @@
 	{
 		"id": 1,
 		"name": "Sol Departure Zone",
-		"nodes": [
-			{ "name": "Luna Orbital Dock", "type": "station", "distance": 0, "description": "Home of the Long Haul Initiative. Last chance for fair prices." },
-			{ "name": "Mars Freeport", "type": "station", "distance": 4, "description": "Red dust on every surface, and merchants who know you can't turn back." },
-			{ "name": "Hazard", "type": "hazard", "distance": 4, "pool": "hazard" },
+		"start": { "name": "Luna Orbital Dock", "type": "station", "description": "Home of the Long Haul Initiative. Last chance for fair prices." },
+		"layout": [
+			"open",
+			"open",
 			{ "name": "Ceres Relay", "type": "station", "distance": 3, "description": "The last station with a Sol flag flying over it." }
+		],
+		"weights": { "station": 18, "hazard": 30, "derelict": 12, "quiet": 40 },
+		"stations": [
+			{ "name": "Mars Freeport", "description": "Red dust on every surface, and merchants who know you can't turn back." },
+			{ "name": "Vesta Depot", "description": "A mining depot that sells mostly fuel and complaints." },
+			{ "name": "Pallas Trade Ring", "description": "A busy ring station where every trader has a deal for you." }
 		]
 	},
 	{
 		"id": 2,
 		"name": "The Kuiper Frontier",
-		"nodes": [
-			{ "name": "Derelict", "type": "derelict", "distance": 4, "pool": "derelict" },
-			{ "name": "Nix Haven", "type": "station", "distance": 5, "event": "nix_haven_toll", "description": "A pirate haven carved into an ice moon. Everything is for sale." },
-			{ "name": "Hazard", "type": "hazard", "distance": 4, "pool": "hazard" }
+		"layout": [
+			"open",
+			{ "name": "Nix Haven", "type": "station", "distance": 4, "event": "nix_haven_toll", "description": "A pirate haven carved into an ice moon. Everything is for sale." },
+			"open"
+		],
+		"weights": { "station": 12, "hazard": 34, "derelict": 32, "quiet": 22 },
+		"stations": [
+			{ "name": "Halley Outpost", "description": "A frontier outpost built into an old comet." },
+			{ "name": "Eris Fuel Stop", "description": "One pump, one cook, one very bored attendant." }
 		]
 	},
 	{
 		"id": 3,
 		"name": "The Deep Dark",
-		"nodes": [
-			{ "name": "Waypoint", "type": "waypoint", "distance": 6, "pool": "waypoint" },
-			{ "name": "Lantern Waystation", "type": "station", "distance": 5, "event": "customs_inspection", "description": "A monastery-station. The monks trade supplies and ask nothing but your story." },
-			{ "name": "Derelict", "type": "derelict", "distance": 5, "pool": "derelict" }
+		"layout": [
+			"open",
+			"open",
+			{ "name": "Lantern Waystation", "type": "station", "distance": 4, "event": "customs_inspection", "description": "A monastery-station. The monks trade supplies and ask nothing but your story." },
+			"open"
+		],
+		"weights": { "station": 8, "hazard": 22, "derelict": 26, "waypoint": 28, "quiet": 16 },
+		"stations": [
+			{ "name": "Sedna Mission", "description": "A tiny mission station, glad of any visitor." },
+			{ "name": "Deepwell Station", "description": "The deepest station humans have built. The prices show it." }
 		]
 	},
 	{
 		"id": 4,
 		"name": "The Approach",
-		"nodes": [
-			{ "name": "Hazard", "type": "hazard", "distance": 4, "pool": "hazard" },
+		"layout": [
+			"open",
 			{ "name": "Earth 2", "type": "destination", "distance": 4 }
+		],
+		"weights": { "station": 6, "hazard": 59, "derelict": 20, "quiet": 15 },
+		"stations": [
+			{ "name": "Approach Beacon Depot", "description": "An automated depot left by the survey mission. It still takes credits." }
 		]
 	}
 ]

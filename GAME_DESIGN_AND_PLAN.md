@@ -41,6 +41,17 @@
 | A Mac (for iOS builds) | $0–600 | A used Apple-silicon Mac mini, a borrowed Mac or a cloud Mac service. **Not needed until Phase 5** |
 | Art / music / SFX | $0–2,000 | Can start with free CC0 assets (Kenney.nl, OpenGameArt) and commission key art later |
 
+### 1.3b Apple TV (tvOS)
+- **Status (Nov 2026):** Godot has no official tvOS export yet. Official support is in progress in [godotengine/godot PR #118332](https://github.com/godotengine/godot/pull/118332) ("Apple: Add tvOS platform support"). It is an open draft, last updated 28 Oct 2026, targeting milestone 4.x. It includes a tvOS exporter and controller support through SDL.
+- **Our approach:** build the game so it's ready the day that support lands. Then a tvOS build is just another export preset (still made on a Mac with Xcode, like iOS).
+- **Already done in the game:**
+  - Every screen works with only arrows, select and back: a Siri Remote, gamepad or keyboard. `tools/nav_test` proves this on every CI run.
+  - Modals trap focus, and there's a strong focus ring.
+  - Title-safe margins on TV (preview with `STARWARD_TV=1`).
+  - No Quit button on Apple platforms, and no hover-only information (each setting's effect is shown in its heading).
+  - Free-text fields (the seed) are hidden on TV.
+- **Fallbacks if the PR is delayed:** build Godot from the PR branch (a custom export template), or ship iPhone/iPad first and add Apple TV later.
+
 ### 1.4 Design rules for iOS from day one
 To make the later iOS port cheap, build these into the Steam version from the start:
 1. **Everything is clickable or tappable.** No hover-only info and no keyboard-only controls.
@@ -123,6 +134,8 @@ Year 2291. Earth is failing. The **Long Haul Initiative** sends private colony s
 - A branching map (like FTL) lets you choose **safe but long** or **short but dangerous** routes.
 - **Seeded runs**, so players can share seeds. This is great for streamers and community challenges.
 
+**As built (Phase 2):** each run generates a seeded map from `data/sectors.json`. Every sector is a few columns of 2-3 stops, joined at fixed hub stations (Ceres Relay, Nix Haven, Lantern Waystation) and ending at Earth 2. At each stop you pick from 2-3 next stops in a "Chart your course" panel. Each option shows its type, how many days away it is, a one-line summary, whether your supplies will be low on arrival, and where it leads. Hazards are shortcuts (3-4 days), stations are detours (5-7 days) where you can trade, derelicts offer salvage, and quiet space is a safe, steady leg. The choice takes a few seconds to read, but planning a route around fuel, food and the next station is the main skill in the game.
+
 ### 3.5 Events
 - A data-driven event system (JSON or Godot Resources) so events are **easy to write in bulk.**
 - **Target at launch: 150+ events.** Each has 2–4 choices, with role and trait gated options.
@@ -147,9 +160,11 @@ All the knobs are constants at the top of `core/TravelSim.gd` plus the credits i
 
 | Captain | Thinking bot wins | Random bot wins |
 |---|---|---|
-| Corporate Pilot (Easy) | ~63% | ~38% |
-| Ex-Navy Officer (Medium) | ~45% | ~25% |
-| Reformed Smuggler (Hard) | ~31% | ~11% |
+| Corporate Pilot (Easy) | ~79% | ~33% |
+| Ex-Navy Officer (Medium) | ~60% | ~19% |
+| Reformed Smuggler (Hard) | ~35% | ~6% |
+
+(With the branching star map, route planning is now a big part of skill, so the gap between thoughtful and careless play is wide.)
 
 Hazard, derelict and waypoint stops draw a random event from a pool each run (seeded), so no two journeys meet the same hazards. Travel pauses with a warning whenever fuel, food, oxygen or power drops below 3 days. Every gamble shows a hint of its risk.
 

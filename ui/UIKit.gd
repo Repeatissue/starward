@@ -31,6 +31,7 @@ const KIND_COLORS := {
 	"hazard": Color("ff8a65"),
 	"derelict": Color("b0bec5"),
 	"waypoint": Color("c792ea"),
+	"quiet": Color("a9c7e8"),
 	"destination": Color("7fd18b"),
 	"corporate": Color("6ec6ff"),
 	"navy": Color("ffd54f"),
@@ -93,7 +94,11 @@ static func make_theme() -> Theme:
 	t.set_stylebox("hover", "Button", _box(Color("26365c"), ACCENT))
 	t.set_stylebox("pressed", "Button", _box(Color("33497a"), ACCENT))
 	t.set_stylebox("disabled", "Button", _box(Color(0.08, 0.1, 0.17, 0.8), Color("1f2840")))
-	t.set_stylebox("focus", "Button", _box(Color(0, 0, 0, 0), ACCENT))
+	# Strong focus ring: on TV and gamepad, focus is the only "cursor" the player has.
+	var focus := _box(Color(1, 1, 1, 0.06), ACCENT)
+	focus.set_border_width_all(3)
+	focus.set_expand_margin_all(3)
+	t.set_stylebox("focus", "Button", focus)
 	t.set_color("font_color", "Button", TEXT)
 	t.set_color("font_hover_color", "Button", ACCENT)
 	t.set_color("font_pressed_color", "Button", ACCENT)
@@ -105,7 +110,10 @@ static func make_theme() -> Theme:
 	t.set_stylebox("normal", "PrimaryButton", _box(ACCENT, ACCENT.lightened(0.25)))
 	t.set_stylebox("hover", "PrimaryButton", _box(ACCENT.lightened(0.15), Color.WHITE))
 	t.set_stylebox("pressed", "PrimaryButton", _box(ACCENT.darkened(0.15), ACCENT))
-	t.set_stylebox("focus", "PrimaryButton", _box(Color(0, 0, 0, 0), Color.WHITE))
+	var pfocus := _box(Color(1, 1, 1, 0.12), Color.WHITE)
+	pfocus.set_border_width_all(3)
+	pfocus.set_expand_margin_all(3)
+	t.set_stylebox("focus", "PrimaryButton", pfocus)
 	t.set_stylebox("disabled", "PrimaryButton", _box(Color(0.25, 0.2, 0.12, 0.8), Color(0.3, 0.25, 0.15)))
 	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
 		t.set_color(state, "PrimaryButton", Color("1a1208"))
@@ -145,6 +153,32 @@ static func _box(bg: Color, border: Color, padding: int = 12, shadow: int = 0) -
 		s.shadow_color = Color(0, 0, 0, 0.35)
 		s.shadow_size = shadow
 	return s
+
+
+# --- Focus (TV remote / gamepad) ------------------------------------------
+
+## Makes everything under `root` except `keep` unfocusable while a modal is open, so arrow keys
+## can't wander behind it. Returns what to pass to release_focus_trap() when the modal closes.
+static func trap_focus(root: Node, keep: Node) -> Array:
+	var saved: Array = []
+	_collect_focus(root, keep, saved)
+	return saved
+
+
+static func _collect_focus(n: Node, keep: Node, saved: Array) -> void:
+	if n == keep:
+		return
+	if n is Control and (n as Control).focus_mode != Control.FOCUS_NONE:
+		saved.append([n, (n as Control).focus_mode])
+		(n as Control).focus_mode = Control.FOCUS_NONE
+	for c in n.get_children():
+		_collect_focus(c, keep, saved)
+
+
+static func release_focus_trap(saved: Array) -> void:
+	for pair in saved:
+		if is_instance_valid(pair[0]):
+			(pair[0] as Control).focus_mode = pair[1]
 
 
 # --- Widgets -------------------------------------------------------------

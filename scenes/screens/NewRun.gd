@@ -4,6 +4,7 @@ extends BaseScreen
 const DIFFICULTY_COLORS := {"Easy": UIKit.GOOD, "Medium": UIKit.ACCENT, "Hard": UIKit.BAD}
 
 var _seed_edit: LineEdit
+var _first: Button = null
 
 
 func build() -> void:
@@ -33,18 +34,27 @@ func build() -> void:
 		var pick := UIKit.primary_button("CHOOSE", func(): _start(bg), 150)
 		pick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		row.add_child(pick)
+		if _first == null:
+			_first = pick
 		root.add_child(card)
 
 	root.add_child(UIKit.spacer(4))
 	var seed_row := UIKit.hbox()
-	seed_row.add_child(UIKit.label("Seed (optional, to replay or share a run):", 17, UIKit.DIM))
 	_seed_edit = LineEdit.new()
-	_seed_edit.placeholder_text = "random"
-	_seed_edit.custom_minimum_size = Vector2(220, UIKit.MIN_TOUCH)
-	seed_row.add_child(_seed_edit)
+	if Platform.allows_text_entry():
+		seed_row.add_child(UIKit.label("Seed (optional, to replay or share a run):", 17, UIKit.DIM))
+		_seed_edit.placeholder_text = "random"
+		_seed_edit.custom_minimum_size = Vector2(220, UIKit.MIN_TOUCH)
+		seed_row.add_child(_seed_edit)
 	seed_row.add_child(UIKit.filler())
 	seed_row.add_child(UIKit.button("Back", func(): goto("menu"), 150))
 	root.add_child(seed_row)
+	if _first:
+		_first.grab_focus()
+
+
+func on_back() -> void:
+	goto("menu")
 
 
 func _start(bg: Dictionary) -> void:
