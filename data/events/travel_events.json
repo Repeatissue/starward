@@ -1,6 +1,7 @@
 [
 	{
 		"id": "frozen_stowaway",
+		"art": "crew",
 		"sector": [1, 2],
 		"weight": 10,
 		"title": "Something in Cargo Bay 3",
@@ -13,6 +14,7 @@
 	},
 	{
 		"id": "micrometeoroid_swarm",
+		"art": "asteroids",
 		"weight": 12,
 		"once": false,
 		"title": "Micrometeoroid Swarm",
@@ -28,6 +30,7 @@
 	},
 	{
 		"id": "hydroponics_bloom",
+		"art": "hydro",
 		"sector": [1, 2, 3],
 		"weight": 8,
 		"title": "Hydroponics Bloom",
@@ -39,6 +42,7 @@
 	},
 	{
 		"id": "cryo_pod_fault",
+		"art": "cryo",
 		"weight": 9,
 		"once": false,
 		"title": "Cryo Bay Alarm",
@@ -51,6 +55,7 @@
 	},
 	{
 		"id": "distress_call",
+		"art": "signal",
 		"sector": [2, 3],
 		"weight": 8,
 		"title": "Distress Call",
@@ -66,6 +71,7 @@
 	},
 	{
 		"id": "trader_hail",
+		"art": "trade",
 		"sector": [1, 2, 3],
 		"weight": 8,
 		"once": false,
@@ -79,6 +85,7 @@
 	},
 	{
 		"id": "crew_fight",
+		"art": "crew",
 		"weight": 7,
 		"once": false,
 		"title": "Tempers Flare",
@@ -91,6 +98,7 @@
 	},
 	{
 		"id": "solar_flare",
+		"art": "sun",
 		"sector": [1, 2],
 		"weight": 7,
 		"title": "Solar Flare",
@@ -103,6 +111,7 @@
 	},
 	{
 		"id": "void_fever",
+		"art": "crew",
 		"sector": [3, 4],
 		"weight": 7,
 		"title": "Void Fever",
@@ -117,6 +126,7 @@
 	},
 	{
 		"id": "strange_signal",
+		"art": "signal",
 		"sector": [3, 4],
 		"weight": 6,
 		"title": "A Repeating Signal",
@@ -131,6 +141,7 @@
 	},
 	{
 		"id": "scrubber_failure",
+		"art": "ship",
 		"weight": 8,
 		"once": false,
 		"title": "Scrubber Failure",
@@ -142,6 +153,7 @@
 	},
 	{
 		"id": "birthday",
+		"art": "crew",
 		"weight": 5,
 		"title": "A Birthday Aboard",
 		"text": "It's someone's birthday. The crew asks if they can make a fuss.",
@@ -152,6 +164,7 @@
 	},
 	{
 		"id": "contraband_offer",
+		"art": "trade",
 		"sector": [1, 2],
 		"weight": 6,
 		"requires": { "not_flag": "smuggling" },
@@ -164,6 +177,7 @@
 	},
 	{
 		"id": "hull_fatigue",
+		"art": "ship",
 		"sector": [2, 3, 4],
 		"weight": 6,
 		"once": false,
@@ -176,6 +190,7 @@
 	},
 	{
 		"id": "early_waker",
+		"art": "cryo",
 		"sector": [2, 3],
 		"weight": 5,
 		"title": "An Early Waker",
@@ -187,6 +202,7 @@
 	},
 	{
 		"id": "aurora_veil",
+		"art": "planet",
 		"sector": [4],
 		"weight": 10,
 		"title": "The Veil",

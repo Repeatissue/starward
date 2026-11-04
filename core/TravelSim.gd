@@ -40,7 +40,6 @@ func _tick_day(moving: bool) -> void:
 	var t: Dictionary = GameState.THRUST[GameState.thrust]
 	var r: Dictionary = GameState.RATIONS[GameState.rations]
 	var living: Array = GameState.living_crew()
-	var crew_count := living.size()
 
 	# Movement and fuel.
 	if moving:
@@ -56,7 +55,7 @@ func _tick_day(moving: bool) -> void:
 			_warn("no_fuel", "Out of fuel. The ship coasts forward at a crawl.")
 
 	# Food.
-	var food_need := crew_count * float(r["food"])
+	var food_need := GameState.daily_use("food")
 	var fed := GameState.get_res("food") >= food_need
 	GameState.add_resource("food", -food_need)
 	if fed:
@@ -65,8 +64,7 @@ func _tick_day(moving: bool) -> void:
 		_warn("no_food", "The food stores are empty. The crew is starving.")
 
 	# Oxygen, plus leaks from a damaged hull.
-	var leak := maxf(0.0, (50.0 - GameState.get_res("hull")) * 0.04)
-	var o2_need := crew_count * O2_PER_CREW + leak
+	var o2_need := GameState.daily_use("oxygen")
 	var breathing := GameState.get_res("oxygen") >= o2_need
 	GameState.add_resource("oxygen", -o2_need)
 	if breathing:

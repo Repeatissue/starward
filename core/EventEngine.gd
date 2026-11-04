@@ -67,47 +67,52 @@ func resolve_choice(event: Dictionary, choice: Dictionary) -> Dictionary:
 	return {"text": text, "changes": changes}
 
 
+## Applies effects and returns notes for the UI: [{"kind", "text", "good"}].
 func apply_effects(fx: Dictionary) -> Array:
 	var notes: Array = []
 	for key in fx:
 		var v: Variant = fx[key]
 		if key in GameState.RESOURCE_KEYS:
 			GameState.add_resource(key, float(v))
-			notes.append("%s %s" % [_signed(v), GameState.RESOURCE_NAMES[key]])
+			notes.append(_note(key, "%s %s" % [_signed(v), GameState.RESOURCE_NAMES[key]], float(v) >= 0.0))
 			continue
 		match key:
 			"colonists":
 				GameState.colonists = maxi(0, GameState.colonists + int(v))
-				notes.append("%s Colonists" % _signed(v))
+				notes.append(_note("colonists", "%s Colonists" % _signed(v), int(v) >= 0))
 			"crew_health":
 				for c in GameState.living_crew():
 					c["health"] = clampf(float(c["health"]) + float(v), 0.0, 100.0)
-				notes.append("%s health, all crew" % _signed(v))
+				notes.append(_note("crew", "%s health, all crew" % _signed(v), float(v) >= 0.0))
 			"crew_morale":
 				for c in GameState.living_crew():
 					c["morale"] = clampf(float(c["morale"]) + float(v), 0.0, 100.0)
-				notes.append("%s morale, all crew" % _signed(v))
+				notes.append(_note("crew", "%s morale, all crew" % _signed(v), float(v) >= 0.0))
 			"injure_random":
 				var hurt := GameState.random_living_crew()
 				if not hurt.is_empty():
 					hurt["health"] = float(hurt["health"]) - float(v)
-					notes.append("%s injured (-%d health)" % [hurt["name"], int(v)])
+					notes.append(_note("crew", "%s injured (-%d health)" % [hurt["name"], int(v)], false))
 			"kill_random":
 				var victim := GameState.random_living_crew()
 				if not victim.is_empty():
 					victim["health"] = 0.0
-					notes.append("%s is lost" % victim["name"])
+					notes.append(_note("crew", "%s is lost" % victim["name"], false))
 			"set_flag":
 				GameState.flags[str(v)] = true
 			"add_crew":
 				GameState.add_crew_member(v.get("name", "Stranger"), v.get("role", "Crew"), v.get("trait", "Newcomer"))
-				notes.append("%s joins the crew" % v.get("name", "Stranger"))
+				notes.append(_note("crew", "%s joins the crew" % v.get("name", "Stranger"), true))
 			"days":
 				TravelSim.idle_days(int(v))
-				notes.append("%d days lost" % int(v))
+				notes.append(_note("time", "%d days lost" % int(v), false))
 			_:
 				push_warning("Unknown event effect: %s" % key)
 	return notes
+
+
+func _note(kind: String, text: String, good: bool) -> Dictionary:
+	return {"kind": kind, "text": text, "good": good}
 
 
 func _signed(v: Variant) -> String:

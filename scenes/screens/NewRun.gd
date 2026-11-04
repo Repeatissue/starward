@@ -1,37 +1,49 @@
 extends BaseScreen
 ## Pick a captain background and (optionally) a seed.
 
+const DIFFICULTY_COLORS := {"Easy": UIKit.GOOD, "Medium": UIKit.ACCENT, "Hard": UIKit.BAD}
+
 var _seed_edit: LineEdit
 
 
 func build() -> void:
-	var root := make_root()
-	root.add_child(UIKit.label("Choose your captain", 40, UIKit.ACCENT))
-	root.add_child(UIKit.para("Your background sets your starting credits. Harder starts multiply your score when you reach Earth 2.", 20, UIKit.DIM))
+	var root := make_root(40, 14)
+	root.add_child(UIKit.title("CHOOSE YOUR CAPTAIN", 36, UIKit.ACCENT))
+	root.add_child(UIKit.para("Your background decides your starting credits. Harder starts multiply your score when you reach Earth 2.", 18, UIKit.DIM))
+	root.add_child(UIKit.spacer(4))
 
 	for bg in Data.backgrounds:
-		var card := UIKit.panel()
-		var row := UIKit.hbox(16)
+		var card := UIKit.panel("CardPanel")
+		var row := UIKit.hbox(20)
 		card.add_child(row)
-		var info := UIKit.vbox(4)
+		row.add_child(IconView.new(bg["id"], 64))
+		var info := UIKit.vbox(6)
 		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		info.add_child(UIKit.label(bg["name"], 26, UIKit.ACCENT))
-		info.add_child(UIKit.para(bg["description"], 18))
-		info.add_child(UIKit.label("Credits: %d    Score x%s" % [int(bg["credits"]), str(bg["score_mult"])], 18, UIKit.DIM))
+		var name_row := UIKit.hbox(12)
+		name_row.add_child(UIKit.title(str(bg["name"]).to_upper(), 22, UIKit.TEXT))
+		var diff: String = bg.get("difficulty", "Medium")
+		name_row.add_child(UIKit.chip(diff.to_upper(), DIFFICULTY_COLORS.get(diff, UIKit.ACCENT)))
+		info.add_child(name_row)
+		info.add_child(UIKit.para(bg["description"], 17, UIKit.DIM))
+		var stats := UIKit.hbox(10)
+		stats.add_child(UIKit.chip("%d credits" % int(bg["credits"]), UIKit.KIND_COLORS["credits"], "credits"))
+		stats.add_child(UIKit.chip("Score x%s" % str(bg["score_mult"]), UIKit.INFO, "navy"))
+		info.add_child(stats)
 		row.add_child(info)
-		var pick := UIKit.button("Choose", func(): _start(bg), 160)
+		var pick := UIKit.primary_button("CHOOSE", func(): _start(bg), 150)
 		pick.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		row.add_child(pick)
 		root.add_child(card)
 
+	root.add_child(UIKit.spacer(4))
 	var seed_row := UIKit.hbox()
-	seed_row.add_child(UIKit.label("Seed (optional):", 20, UIKit.DIM))
+	seed_row.add_child(UIKit.label("Seed (optional, to replay or share a run):", 17, UIKit.DIM))
 	_seed_edit = LineEdit.new()
 	_seed_edit.placeholder_text = "random"
-	_seed_edit.custom_minimum_size = Vector2(260, UIKit.MIN_TOUCH)
+	_seed_edit.custom_minimum_size = Vector2(220, UIKit.MIN_TOUCH)
 	seed_row.add_child(_seed_edit)
 	seed_row.add_child(UIKit.filler())
-	seed_row.add_child(UIKit.button("Back", func(): goto("menu"), 160))
+	seed_row.add_child(UIKit.button("Back", func(): goto("menu"), 150))
 	root.add_child(seed_row)
 
 

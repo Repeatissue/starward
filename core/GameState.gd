@@ -141,6 +141,49 @@ func distance_travelled() -> float:
 	return total
 
 
+## The next stop where you can resupply (a station or Earth 2), and how far away it is.
+func next_stop() -> Dictionary:
+	var dist := -progress
+	for i in range(node_index + 1, route.size()):
+		dist += float(route[i].get("distance", 0.0))
+		if route[i]["type"] in ["station", "destination"]:
+			return {"name": route[i]["name"], "distance": maxf(dist, 0.0)}
+	return {"name": "Earth 2", "distance": maxf(dist, 0.0)}
+
+
+# --- Supplies forecast ---------------------------------------------------
+
+func speed() -> float:
+	return float(THRUST[thrust]["speed"])
+
+
+## How much of a resource the ship uses per day at the current settings.
+func daily_use(key: String) -> float:
+	var n := living_crew().size()
+	match key:
+		"food":
+			return n * float(RATIONS[rations]["food"])
+		"oxygen":
+			return n * TravelSim.O2_PER_CREW + maxf(0.0, (50.0 - get_res("hull")) * 0.04)
+		"power":
+			return TravelSim.CRYO_POWER_PER_DAY
+		"fuel":
+			return float(THRUST[thrust]["fuel"])
+	return 0.0
+
+
+func days_left(key: String) -> float:
+	var use := daily_use(key)
+	if use <= 0.0:
+		return 9999.0
+	return get_res(key) / use
+
+
+## Roughly how much of a resource covering `distance` light-units will take at current settings.
+func supply_needed(key: String, distance: float) -> float:
+	return ceilf(daily_use(key) * distance / speed())
+
+
 # --- Resources & crew ----------------------------------------------------
 
 func get_res(key: String) -> float:
