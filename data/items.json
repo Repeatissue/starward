@@ -1,0 +1,8 @@
+[
+	{ "id": "fuel",   "name": "Fuel Cells (x10)",   "resource": "fuel",   "amount": 10, "price": 25 },
+	{ "id": "food",   "name": "Food Packs (x10)",   "resource": "food",   "amount": 10, "price": 15 },
+	{ "id": "oxygen", "name": "O2 Canisters (x10)", "resource": "oxygen", "amount": 10, "price": 20 },
+	{ "id": "power",  "name": "Power Cells (x10)",  "resource": "power",  "amount": 10, "price": 20 },
+	{ "id": "parts",  "name": "Spare Parts (x1)",   "resource": "parts",  "amount": 1,  "price": 40 },
+	{ "id": "hull",   "name": "Hull Plating (+10)", "resource": "hull",   "amount": 10, "price": 60 }
+]

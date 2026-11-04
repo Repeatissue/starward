@@ -1,0 +1,120 @@
+[
+	{
+		"id": "belt_crossing",
+		"trigger": "node",
+		"title": "Crossing the Belt",
+		"text": "The asteroid belt lies across your path. There are tumbling rocks the size of cities, and gaps you can't see until you're in them.",
+		"choices": [
+			{ "text": "Let the Pilot thread a gap.", "requires": { "role": "Pilot" }, "outcomes": [
+				{ "weight": 8, "effects": { "hull": -3 }, "result": "Clean through with a scrape or two." },
+				{ "weight": 2, "effects": { "hull": -15 }, "result": "A rock clips the cargo spine. It could have been worse." }
+			] },
+			{ "text": "Navigate it yourself.", "outcomes": [
+				{ "weight": 5, "effects": {}, "result": "Luck is on your side." },
+				{ "weight": 5, "effects": { "hull": -25, "injure_random": 10 }, "result": "A bad call. Metal screams down the length of the ship." }
+			] },
+			{ "text": "Hire a Ceres tug to tow you through.", "requires": { "resources": { "credits": 150 } }, "effects": { "credits": -150 }, "result": "Expensive, boring and safe." },
+			{ "text": "Take the long way around.", "effects": { "fuel": -10, "days": 3 }, "result": "Three days of detour, but not a scratch." }
+		]
+	},
+	{
+		"id": "drift_wreck",
+		"trigger": "node",
+		"title": "The Drifting Wreck",
+		"text": "A colony ship like yours, dark and tumbling. Its name has been scorched off the hull. Another crew that didn't make it.",
+		"choices": [
+			{ "text": "Send a salvage team.", "outcomes": [
+				{ "weight": 5, "effects": { "parts": 2, "fuel": 15 }, "result": "Their engine room is mostly intact." },
+				{ "weight": 3, "effects": { "food": 25, "oxygen": 15 }, "result": "Their stores were never touched. Someone died with full shelves." },
+				{ "weight": 2, "effects": { "injure_random": 30 }, "result": "The wreck's reactor flickers back to life and vents a burst of plasma." }
+			] },
+			{ "text": "Send Security in first to sweep it.", "requires": { "role": "Security" }, "effects": { "parts": 2, "fuel": 15, "credits": 100 }, "result": "A careful sweep turns up a hidden strongbox too." },
+			{ "text": "Leave the dead in peace.", "effects": { "crew_morale": 3 }, "result": "You play their distress beacon's last message once, for respect." }
+		]
+	},
+	{
+		"id": "nix_haven_toll",
+		"trigger": "node",
+		"title": "The Haven's Toll",
+		"text": "Three gunships flank you on approach. \"Docking fee is a hundred credits, friend. Non-negotiable.\"",
+		"choices": [
+			{ "text": "Pay the toll.", "requires": { "resources": { "credits": 100 } }, "effects": { "credits": -100 }, "result": "\"Pleasure doing business.\"" },
+			{ "text": "Have Security stare them down.", "requires": { "role": "Security" }, "outcomes": [
+				{ "weight": 6, "effects": {}, "result": "\"...Fine. First one's free.\"" },
+				{ "weight": 4, "effects": { "hull": -10, "credits": -50 }, "result": "They don't like your face. Warning shots, then a smaller fee." }
+			] },
+			{ "text": "Refuse and dock anyway.", "outcomes": [
+				{ "weight": 5, "effects": { "credits": -200 }, "result": "They clamp your ship and take what they like from your account." },
+				{ "weight": 5, "effects": { "hull": -15 }, "result": "They shoot first. You dock with a fresh scorch mark." }
+			] }
+		]
+	},
+	{
+		"id": "ion_storm",
+		"trigger": "node",
+		"title": "Ion Storm",
+		"text": "Purple lightning crawls across a storm front the width of a solar system. Your instruments are already flickering.",
+		"choices": [
+			{ "text": "Shut everything down and ride it out.", "effects": { "days": 2, "power": -5 }, "result": "Two days in the dark, listening to the hull crackle." },
+			{ "text": "Punch through at full burn.", "outcomes": [
+				{ "weight": 6, "effects": { "fuel": -10, "hull": -8 }, "result": "You're through, smoking but whole." },
+				{ "weight": 4, "effects": { "fuel": -10, "hull": -20, "power": -10 }, "result": "A bolt fries the main bus. Sparks everywhere." }
+			] },
+			{ "text": "Ground the hull and push through.", "requires": { "role": "Engineer" }, "effects": { "hull": -5 }, "result": "The storm slides off you like water." }
+		]
+	},
+	{
+		"id": "long_silence",
+		"trigger": "node",
+		"title": "The Long Silence",
+		"text": "Weeks without a signal from anyone. The crew has stopped talking at meals. Someone has started counting the rivets.",
+		"choices": [
+			{ "text": "Organise a talent night.", "effects": { "crew_morale": 10, "power": -2 }, "result": "Terrible juggling. A surprisingly good harmonica solo." },
+			{ "text": "Have the Scientist give stargazing lectures.", "requires": { "role": "Scientist" }, "effects": { "crew_morale": 15 }, "result": "Turns out the dark isn't empty at all." },
+			{ "text": "Let them cope in their own way.", "effects": { "crew_morale": -10 }, "result": "The silence gets deeper." }
+		]
+	},
+	{
+		"id": "customs_inspection",
+		"trigger": "node",
+		"requires": { "flag": "smuggling" },
+		"title": "Inspection",
+		"text": "The Waystation's brothers ask to inspect your cargo before docking. Politely, but firmly. The sealed crates are still in your hold.",
+		"choices": [
+			{ "text": "Offer a generous donation to the monastery.", "requires": { "resources": { "credits": 150 } }, "effects": { "credits": -150 }, "result": "They bless your ship and don't open the crates." },
+			{ "text": "Have Security talk your way through.", "requires": { "role": "Security" }, "outcomes": [
+				{ "weight": 6, "effects": {}, "result": "\"Medical supplies,\" you say. They believe you." },
+				{ "weight": 4, "effects": { "credits": -300, "crew_morale": -5 }, "result": "They open a crate. You pay a heavy fine." }
+			] },
+			{ "text": "Confess and hand over the crates.", "effects": { "credits": -200, "crew_morale": 5 }, "result": "They confiscate the crates and fine you. The crew seems relieved." }
+		]
+	},
+	{
+		"id": "ghost_signal",
+		"trigger": "node",
+		"title": "Ghost Signal",
+		"text": "A ship identical to yours is broadcasting your own call sign. When you hail it, it answers with your voice.",
+		"choices": [
+			{ "text": "Board it.", "outcomes": [
+				{ "weight": 6, "effects": { "oxygen": 20, "power": 15 }, "result": "Empty. Perfectly stocked. You take what you can and don't look back." },
+				{ "weight": 4, "effects": { "crew_morale": -15 }, "result": "In the captain's chair you find a log in your handwriting. You burn it." }
+			] },
+			{ "text": "Have the Scientist scan it from a distance.", "requires": { "role": "Scientist" }, "effects": { "credits": 120 }, "result": "Some kind of sensor echo. The data alone is worth something." },
+			{ "text": "Fly past. Fast.", "effects": { "fuel": -4 }, "result": "It doesn't follow. You think." }
+		]
+	},
+	{
+		"id": "gravity_well",
+		"trigger": "node",
+		"title": "The Twin Suns",
+		"text": "Earth 2's twin stars bend space between you and the planet. You can slingshot around them, or burn the long way.",
+		"choices": [
+			{ "text": "Slingshot around the twin suns.", "outcomes": [
+				{ "weight": 6, "effects": { "fuel": 20, "hull": -5 }, "result": "The slingshot flings you toward Earth 2 with fuel to spare." },
+				{ "weight": 4, "effects": { "hull": -30 }, "result": "You cut it too close. The hull glows red." }
+			] },
+			{ "text": "Let the Pilot plot a precise slingshot.", "requires": { "role": "Pilot" }, "effects": { "fuel": 25 }, "result": "A textbook manoeuvre. The crew applauds." },
+			{ "text": "Burn the long way around.", "effects": { "fuel": -25, "days": 2 }, "result": "Slow, costly and safe." }
+		]
+	}
+]

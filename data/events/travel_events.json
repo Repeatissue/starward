@@ -1,0 +1,199 @@
+[
+	{
+		"id": "frozen_stowaway",
+		"sector": [1, 2],
+		"weight": 10,
+		"title": "Something in Cargo Bay 3",
+		"text": "The crew finds a heat signature behind the water tanks. It's a teenage girl, half-frozen, clutching a stolen ration bar.",
+		"choices": [
+			{ "text": "Give her a bunk. One more mouth to feed.", "effects": { "add_crew": { "name": "Mira", "role": "Stowaway", "trait": "Scrappy" }, "food": -10 }, "result": "Mira eats like she hasn't in weeks. Then she fixes the galley dispenser that nobody else could." },
+			{ "text": "Sedate her and put her in an empty cryo pod.", "requires": { "role": "Medic" }, "effects": { "colonists": 1, "power": -2 }, "result": "She'll wake up on Earth 2 with no memory of the trip. Maybe that's a kindness." },
+			{ "text": "Hand her over at the next station for the bounty.", "effects": { "credits": 50, "crew_morale": -6 }, "result": "Fifty credits. The crew avoids your eyes for days." }
+		]
+	},
+	{
+		"id": "micrometeoroid_swarm",
+		"weight": 12,
+		"once": false,
+		"title": "Micrometeoroid Swarm",
+		"text": "Proximity alarms scream. A cloud of sand-sized debris is moving faster than any bullet, and it's directly ahead.",
+		"choices": [
+			{ "text": "Divert power to the deflectors.", "effects": { "power": -10 }, "result": "The deflectors glow white. The swarm passes like rain on a window." },
+			{ "text": "Brace and ride it out.", "outcomes": [
+				{ "weight": 6, "effects": { "hull": -8 }, "result": "It sounds like hail on a tin roof. Minor damage." },
+				{ "weight": 4, "effects": { "hull": -20, "injure_random": 15 }, "result": "A fragment punches clean through the mess deck." }
+			] },
+			{ "text": "Weave through the gaps.", "requires": { "role": "Pilot" }, "effects": { "fuel": -4 }, "result": "Your pilot threads the needle without breaking a sweat." }
+		]
+	},
+	{
+		"id": "hydroponics_bloom",
+		"sector": [1, 2, 3],
+		"weight": 8,
+		"title": "Hydroponics Bloom",
+		"text": "The hydroponics bay is overflowing. Something in the new nutrient mix worked better than expected.",
+		"choices": [
+			{ "text": "Harvest everything.", "effects": { "food": 20 }, "result": "Fresh greens for the first time in weeks." },
+			{ "text": "Have the Scientist tune the growth cycle first.", "requires": { "role": "Scientist" }, "effects": { "food": 35, "power": -3 }, "result": "A careful harvest, and a second crop already sprouting." }
+		]
+	},
+	{
+		"id": "cryo_pod_fault",
+		"weight": 9,
+		"once": false,
+		"title": "Cryo Bay Alarm",
+		"text": "A coolant loop has failed in the cryo bay. Twelve pods are warming up.",
+		"choices": [
+			{ "text": "Patch the coolant loop.", "requires": { "role": "Engineer", "resources": { "parts": 1 } }, "effects": { "parts": -1 }, "result": "Twenty tense minutes later, the readings settle back to blue." },
+			{ "text": "Reroute ship power to keep them cold.", "effects": { "power": -15 }, "result": "The lights dim across the ship, but every pod holds." },
+			{ "text": "There's nothing to be done.", "effects": { "colonists": -12, "crew_morale": -10 }, "result": "You watch twelve heartbeats slow to nothing on the monitor." }
+		]
+	},
+	{
+		"id": "distress_call",
+		"sector": [2, 3],
+		"weight": 8,
+		"title": "Distress Call",
+		"text": "A weak signal on an emergency band: \"...anyone... life support failing... please...\"",
+		"choices": [
+			{ "text": "Answer the call.", "outcomes": [
+				{ "weight": 5, "effects": { "food": -15, "crew_morale": 10, "credits": 150 }, "result": "A starving mining family. You share your food, and they pay you with everything they have." },
+				{ "weight": 3, "effects": { "hull": -15, "credits": -100 }, "result": "It's a pirate lure. You blast free, with less hull and fewer credits." },
+				{ "weight": 2, "effects": { "add_crew": { "name": "Okafor", "role": "Engineer", "trait": "Grateful" } }, "result": "There's one survivor, an engineer who insists on working off the debt." }
+			] },
+			{ "text": "Keep flying. You can't save everyone.", "effects": { "crew_morale": -8 }, "result": "The signal fades behind you. Nobody speaks at dinner." }
+		]
+	},
+	{
+		"id": "trader_hail",
+		"sector": [1, 2, 3],
+		"weight": 8,
+		"once": false,
+		"title": "Free Trader",
+		"text": "A battered free trader matches your course. \"Fuel, food, I deal in anything. What do you need?\"",
+		"choices": [
+			{ "text": "Buy 40 fuel for 120 credits.", "requires": { "resources": { "credits": 120 } }, "effects": { "credits": -120, "fuel": 40 }, "result": "The fuel smells off, but it burns." },
+			{ "text": "Sell 30 food for 150 credits.", "requires": { "resources": { "food": 30 } }, "effects": { "food": -30, "credits": 150 }, "result": "They pay in good chits." },
+			{ "text": "Wave them off.", "effects": {}, "result": "The trader peels away, unbothered." }
+		]
+	},
+	{
+		"id": "crew_fight",
+		"weight": 7,
+		"once": false,
+		"title": "Tempers Flare",
+		"text": "Shouting from the galley. Two of your crew are at each other's throats over the last coffee pouch.",
+		"choices": [
+			{ "text": "Have Security break it up.", "requires": { "role": "Security" }, "effects": { "crew_morale": -2 }, "result": "Order is restored. Grudges are not." },
+			{ "text": "Let them settle it.", "effects": { "injure_random": 20, "crew_morale": 5 }, "result": "Black eyes, then a grudging handshake. Oddly, the mood improves." },
+			{ "text": "Double rations tonight to cool tempers.", "requires": { "resources": { "food": 10 } }, "effects": { "food": -10, "crew_morale": 8 }, "result": "Full bellies make for quieter halls." }
+		]
+	},
+	{
+		"id": "solar_flare",
+		"sector": [1, 2],
+		"weight": 7,
+		"title": "Solar Flare",
+		"text": "A massive flare is erupting behind you. Radiation will hit in minutes.",
+		"choices": [
+			{ "text": "Shields to full.", "effects": { "power": -12 }, "result": "The shields hold. Barely." },
+			{ "text": "Everyone into the shielded core until it passes.", "effects": { "crew_health": -6, "days": 1 }, "result": "A cramped, sweaty day. Everyone lives." },
+			{ "text": "Hand out anti-rad meds and press on.", "requires": { "role": "Medic" }, "effects": { "crew_health": -4 }, "result": "Nausea, headaches, but no lasting harm." }
+		]
+	},
+	{
+		"id": "void_fever",
+		"sector": [3, 4],
+		"weight": 7,
+		"title": "Void Fever",
+		"text": "A crew member wakes burning hot, muttering that the stars are watching them.",
+		"choices": [
+			{ "text": "Treat them in the med bay.", "requires": { "role": "Medic" }, "effects": { "power": -3 }, "result": "The fever breaks after a long night." },
+			{ "text": "Quarantine them and hope.", "outcomes": [
+				{ "weight": 6, "effects": { "injure_random": 35 }, "result": "The fever breaks, but it leaves them weak." },
+				{ "weight": 4, "effects": { "crew_health": -12 }, "result": "It spreads before it fades." }
+			] }
+		]
+	},
+	{
+		"id": "strange_signal",
+		"sector": [3, 4],
+		"weight": 6,
+		"title": "A Repeating Signal",
+		"text": "A pattern of prime numbers is pulsing from somewhere ahead. It's not natural.",
+		"choices": [
+			{ "text": "Have the Scientist decode it.", "requires": { "role": "Scientist" }, "outcomes": [
+				{ "weight": 7, "effects": { "credits": 250, "set_flag": "decoded_signal" }, "result": "Navigation data from a lost survey ship. The colony charter will pay well for it." },
+				{ "weight": 3, "effects": { "crew_morale": -10 }, "result": "It's a recording of a dying ship's last minutes, looping forever." }
+			] },
+			{ "text": "Log it and move on.", "effects": {}, "result": "Someone else's mystery." }
+		]
+	},
+	{
+		"id": "scrubber_failure",
+		"weight": 8,
+		"once": false,
+		"title": "Scrubber Failure",
+		"text": "The main CO2 scrubber grinds to a halt. Backup systems kick in, but they're thirsty.",
+		"choices": [
+			{ "text": "Rebuild the scrubber.", "requires": { "role": "Engineer", "resources": { "parts": 1 } }, "effects": { "parts": -1 }, "result": "Good as new. Better, maybe." },
+			{ "text": "Run on the backups.", "effects": { "oxygen": -20 }, "result": "The backups burn through your reserves." }
+		]
+	},
+	{
+		"id": "birthday",
+		"weight": 5,
+		"title": "A Birthday Aboard",
+		"text": "It's someone's birthday. The crew asks if they can make a fuss.",
+		"choices": [
+			{ "text": "Throw a party.", "effects": { "food": -6, "crew_morale": 12 }, "result": "Paper hats made from old manuals. Off-key singing. It's perfect." },
+			{ "text": "No time for that.", "effects": { "crew_morale": -4 }, "result": "The cake mix goes back in storage." }
+		]
+	},
+	{
+		"id": "contraband_offer",
+		"sector": [1, 2],
+		"weight": 6,
+		"requires": { "not_flag": "smuggling" },
+		"title": "No Questions Asked",
+		"text": "A freighter captain offers 300 credits to carry three sealed crates to the Lantern Waystation. No questions asked.",
+		"choices": [
+			{ "text": "Take the crates.", "effects": { "credits": 300, "set_flag": "smuggling" }, "result": "The crates hum faintly. You decide not to think about it." },
+			{ "text": "Refuse.", "effects": {}, "result": "The captain shrugs and moves on." }
+		]
+	},
+	{
+		"id": "hull_fatigue",
+		"sector": [2, 3, 4],
+		"weight": 6,
+		"once": false,
+		"title": "Hull Fatigue",
+		"text": "Hairline cracks are spreading along a structural rib. The ship is getting old.",
+		"choices": [
+			{ "text": "Reinforce the rib properly.", "requires": { "role": "Engineer", "resources": { "parts": 2 } }, "effects": { "parts": -2, "hull": 10 }, "result": "Stronger than it was." },
+			{ "text": "Weld what you can.", "effects": { "hull": -5 }, "result": "It'll hold. Probably." }
+		]
+	},
+	{
+		"id": "early_waker",
+		"sector": [2, 3],
+		"weight": 5,
+		"title": "An Early Waker",
+		"text": "Pod 117 opens on its own. A colonist stumbles out, confused and asking if they've arrived.",
+		"choices": [
+			{ "text": "Put them to work.", "effects": { "colonists": -1, "add_crew": { "name": "Dov Ashe", "role": "Colonist", "trait": "Eager" } }, "result": "Dov is clumsy, but tireless." },
+			{ "text": "Sedate them and refreeze the pod.", "effects": { "power": -5 }, "result": "Back to sleep. They won't remember." }
+		]
+	},
+	{
+		"id": "aurora_veil",
+		"sector": [4],
+		"weight": 10,
+		"title": "The Veil",
+		"text": "Earth 2's star system greets you with a curtain of shimmering light that stretches for millions of kilometres.",
+		"choices": [
+			{ "text": "Stop the engines and watch.", "effects": { "crew_morale": 15, "days": 1 }, "result": "Nobody says a word for an hour. Some of them are crying." },
+			{ "text": "Keep flying. We're almost there.", "effects": {}, "result": "It's beautiful in the rear camera too." }
+		]
+	}
+]
