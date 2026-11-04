@@ -1,18 +1,43 @@
 class_name RouteMap
 extends Control
 ## The whole journey at a glance: sectors, stops (with icons) and your ship's position.
+## Performance: the map (with all its text) only re-draws when refresh() is called.
+## Only the small ship marker and pulse ring animate every frame, on a child layer.
 
 const SECTOR_TINTS := [Color("6ec6ff"), Color("c792ea"), Color("ff8a65"), Color("7fd18b")]
 
-var _t := 0.0
+var _marker: Marker
+var _ship_pos := Vector2.ZERO
+var _current_pos := Vector2.ZERO
+var _current_r := 14.0
+
+
+class Marker extends Control:
+	var map: RouteMap
+	var _t := 0.0
+
+	func _process(delta: float) -> void:
+		_t += delta
+		queue_redraw()
+
+	func _draw() -> void:
+		var p := map._current_pos
+		draw_arc(p, map._current_r + 5.0 + 2.0 * sin(_t * 3.0), 0, TAU, 32, Color(UIKit.ACCENT, 0.8), 2.0, true)
+		ShipArt.draw_ship(self, map._ship_pos + Vector2(0, sin(_t * 2.0) * 1.5), 0.17, 22.0, _t)
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_marker = Marker.new()
+	_marker.map = self
+	_marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_marker.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(_marker)
+	resized.connect(refresh)
 
 
-func _process(delta: float) -> void:
-	_t += delta
+## Call whenever the journey state changes (travel, arrival, load).
+func refresh() -> void:
 	queue_redraw()
 
 
@@ -55,6 +80,7 @@ func _draw() -> void:
 		ship_x = lerpf(xs[idx], xs[idx + 1], clampf(GameState.progress / leg, 0.0, 1.0))
 	draw_dashed_line(Vector2(xs[0], y), Vector2(xs[xs.size() - 1], y), Color(UIKit.DIM, 0.6), 2.0, 8.0)
 	draw_line(Vector2(xs[0], y), Vector2(ship_x, y), UIKit.ACCENT, 4.0, true)
+	_ship_pos = Vector2(ship_x, y - 28)
 
 	# Stops
 	for k in route.size():
@@ -69,7 +95,8 @@ func _draw() -> void:
 		draw_arc(p, r, 0, TAU, 28, col, 2.0, true)
 		Icons.draw(self, kind, Rect2(p - Vector2(r, r) * 0.62, Vector2(r, r) * 1.24), col)
 		if k == idx:
-			draw_arc(p, r + 5.0 + 2.0 * sin(_t * 3.0), 0, TAU, 32, Color(UIKit.ACCENT, 0.8), 2.0, true)
+			_current_pos = p
+			_current_r = r
 
 	# Labels for where you are, where you're going, and the goal
 	_label(font, xs[idx], y + 38, str(route[idx]["name"]), UIKit.ACCENT)
@@ -81,8 +108,6 @@ func _draw() -> void:
 	var last := route.size() - 1
 	if last > idx + 1:
 		_label(font, xs[last], y + 38, "EARTH 2", UIKit.GOOD)
-
-	ShipArt.draw_ship(self, Vector2(ship_x, y - 28 + sin(_t * 2.0) * 1.5), 0.17, 22.0, _t)
 
 
 func _label(font: Font, x: float, y: float, text: String, color: Color) -> void:

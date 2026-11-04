@@ -24,6 +24,7 @@ var _day_label: Label
 var _location_label: Label
 var _next_label: Label
 var _ship: ShipView
+var _route: RouteMap
 var _advisor_icon: IconView
 var _advisor_text: Label
 var _log: RichTextLabel
@@ -50,9 +51,9 @@ func build() -> void:
 
 	# Route map
 	var route_panel := UIKit.panel()
-	var route := RouteMap.new()
-	route.custom_minimum_size = Vector2(0, 110)
-	route_panel.add_child(route)
+	_route = RouteMap.new()
+	_route.custom_minimum_size = Vector2(0, 110)
+	route_panel.add_child(_route)
 	root.add_child(route_panel)
 
 	# Body: status | ship + advice + log | crew
@@ -214,6 +215,7 @@ func _refresh() -> void:
 			int(100.0 * GameState.distance_travelled() / maxf(1.0, GameState.total_distance()))]
 
 	_update_meters()
+	_route.refresh()
 	_ship.set_thrust(GameState.thrust)
 	_ship.damaged = GameState.get_res("hull") < 50.0
 	main.starfield.target_speed = STARFIELD_SPEED.get(GameState.thrust, 14.0)

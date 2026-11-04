@@ -23,7 +23,21 @@ func set_data(p_value: float, p_hint: String, p_low: bool) -> void:
 	value = p_value
 	hint = p_hint
 	low = p_low
+	set_process(low)  # only animate (flash) while low
 	queue_redraw()
+
+
+func _ready() -> void:
+	set_process(low)
+
+
+## Low meters pulse gently; 12 redraws a second is enough for that.
+var _since_redraw := 0.0
+func _process(delta: float) -> void:
+	_since_redraw += delta
+	if _since_redraw >= 1.0 / 12.0:
+		_since_redraw = 0.0
+		queue_redraw()
 
 
 func _draw() -> void:
@@ -31,7 +45,6 @@ func _draw() -> void:
 	var col := UIKit.BAD if low else Icons.color_for(kind)
 	if low:
 		col = col.lerp(Color.WHITE, 0.25 * (0.5 + 0.5 * sin(Time.get_ticks_msec() / 180.0)))
-		queue_redraw()
 	Icons.draw(self, kind, Rect2(2, 6, 28, 28), col)
 	var x := 40.0
 	var w := size.x - x

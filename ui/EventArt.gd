@@ -23,6 +23,7 @@ const PALETTES := {
 var art := "void"
 var _seed := 0
 var _t := 0.0
+var _since_redraw := 1.0
 
 
 func _init(p_art: String = "void", seed_text: String = "") -> void:
@@ -33,9 +34,13 @@ func _init(p_art: String = "void", seed_text: String = "") -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
+## Redraw at ~30 fps: plenty for gentle animation, half the cost on high-refresh screens.
 func _process(delta: float) -> void:
 	_t += delta
-	queue_redraw()
+	_since_redraw += delta
+	if _since_redraw >= 1.0 / 30.0:
+		_since_redraw = 0.0
+		queue_redraw()
 
 
 func _draw() -> void:

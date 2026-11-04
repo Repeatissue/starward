@@ -1,7 +1,8 @@
 class_name Starfield
 extends Control
-## Animated parallax starfield with nebula clouds. Lives behind every screen.
-## Call boost() for a warp-speed burst (e.g. when the ship travels).
+## Parallax starfield with nebula clouds, behind every screen.
+## Performance: every layer is drawn ONCE and scrolled by moving it, so the starfield costs
+## almost nothing per frame. Layers only re-draw during a warp burst (to show streaks).
 
 ## [scroll factor, star size, count] per layer.
 const LAYERS := [[0.15, 0.9, 150], [0.4, 1.4, 70], [1.0, 2.1, 28]]
@@ -13,19 +14,71 @@ const NEBULAE := [
 
 var target_speed := 10.0
 var _speed := 10.0
-var _stars: Array = []
-var _offsets: Array = [0.0, 0.0, 0.0]
 var _t := 0.0
+var _layers: Array = []
+var _offsets: Array = []
+var _glow: GradientTexture2D
+
+
+class StarLayer extends Control:
+	var stars: PackedVector2Array
+	var star_size := 1.0
+	var alpha := 0.5
+	var streak := 0.0
+
+	func _draw() -> void:
+		var w := size.x * 0.5  # layer is two screens wide so it can wrap seamlessly
+		var col := Color(0.85, 0.9, 1.0, alpha)
+		for p in stars:
+			for copy in 2:
+				var pos := Vector2(p.x * w + copy * w, p.y * size.y)
+				if streak > 2.0:
+					draw_line(pos, pos + Vector2(streak, 0), col, star_size)
+				else:
+					draw_rect(Rect2(pos - Vector2.ONE * star_size * 0.6, Vector2.ONE * star_size * 1.2), col)
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_glow = make_glow_texture()
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 7
 	for li in LAYERS.size():
+		var layer := StarLayer.new()
+		layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		layer.star_size = LAYERS[li][1]
+		layer.alpha = 0.35 + 0.25 * li
 		for i in int(LAYERS[li][2]):
-			_stars.append([Vector2(rng.randf(), rng.randf()), li, rng.randf() * TAU])
+			layer.stars.append(Vector2(rng.randf(), rng.randf()))
+		add_child(layer)
+		_layers.append(layer)
+		_offsets.append(0.0)
+	resized.connect(_on_resized)
+	_on_resized()
+
+
+## A soft radial glow (white centre fading to transparent). One quad replaces many stacked circles.
+static func make_glow_texture() -> GradientTexture2D:
+	var g := Gradient.new()
+	g.set_color(0, Color(1, 1, 1, 1))
+	g.set_color(1, Color(1, 1, 1, 0))
+	g.add_point(0.45, Color(1, 1, 1, 0.35))
+	var tex := GradientTexture2D.new()
+	tex.gradient = g
+	tex.fill = GradientTexture2D.FILL_RADIAL
+	tex.fill_from = Vector2(0.5, 0.5)
+	tex.fill_to = Vector2(1.0, 0.5)
+	tex.width = 128
+	tex.height = 128
+	return tex
+
+
+func _on_resized() -> void:
+	for layer in _layers:
+		layer.size = Vector2(size.x * 2.0, size.y)
+		layer.queue_redraw()
+	queue_redraw()
 
 
 func boost(amount: float = 450.0) -> void:
@@ -35,9 +88,16 @@ func boost(amount: float = 450.0) -> void:
 func _process(delta: float) -> void:
 	_t += delta
 	_speed = lerpf(_speed, target_speed, clampf(delta * 1.5, 0.0, 1.0))
-	for li in LAYERS.size():
-		_offsets[li] += _speed * float(LAYERS[li][0]) * delta
-	queue_redraw()
+	for li in _layers.size():
+		var layer: StarLayer = _layers[li]
+		var factor: float = LAYERS[li][0]
+		_offsets[li] = fposmod(float(_offsets[li]) + _speed * factor * delta, size.x)
+		layer.position.x = -float(_offsets[li])
+		layer.modulate.a = 0.85 + 0.15 * sin(_t * (0.8 + li * 0.5) + li)
+		var streak := _speed * factor * 0.05
+		if streak > 2.0 or layer.streak > 2.0:
+			layer.streak = streak
+			layer.queue_redraw()
 
 
 func _draw() -> void:
@@ -50,18 +110,4 @@ func _draw() -> void:
 	for n in NEBULAE:
 		var nc := Vector2(n[0].x * w, n[0].y * h)
 		var nr: float = n[1] * maxf(w, h)
-		for k in 7:
-			draw_circle(nc, nr * (1.0 - k * 0.13), Color(n[2], 0.022))
-	for s in _stars:
-		var li: int = s[1]
-		var p: Vector2 = s[0]
-		var x := fposmod(p.x * w - float(_offsets[li]), w)
-		var y := p.y * h
-		var twinkle := 0.65 + 0.35 * sin(_t * 1.5 + float(s[2]))
-		var col := Color(0.85, 0.9, 1.0, (0.35 + 0.25 * li) * twinkle)
-		var star_size: float = LAYERS[li][1]
-		var streak := _speed * float(LAYERS[li][0]) * 0.05
-		if streak > 2.0:
-			draw_line(Vector2(x, y), Vector2(x + streak, y), col, star_size)
-		else:
-			draw_circle(Vector2(x, y), star_size * 0.6, col)
+		draw_texture_rect(_glow, Rect2(nc - Vector2(nr, nr), Vector2(nr, nr) * 2.0), false, Color(n[2], 0.16))
