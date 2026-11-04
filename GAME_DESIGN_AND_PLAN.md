@@ -135,7 +135,25 @@ Year 2291. Earth is failing. The **Long Haul Initiative** sends private colony s
 - **Codex:** collects discovered anomalies, alien life and lore.
 - Keep it **light**. A first-time player can still win; unlocks add variety, not raw power.
 
-### 3.7 Endings
+### 3.7 Difficulty (tuned to feel like the original trail games: hard)
+The original Oregon Trail was hard because of steady pressure, not big set-pieces: disease (decided by pace and rations), broken wagon parts, prices that climbed at every fort, and never quite enough money. STARWARD uses the same levers:
+- **Illness** is the steady killer. Every crew member has a small daily chance to fall sick. The odds rise with poor rations, hard thrust, low morale and poor health. Sick crew lose health every day until they recover, which happens faster with a Medic and Full rations.
+- **Breakdowns** need spare parts. With no parts (or no Engineer) you lose days, and days cost supplies.
+- **Prices rise** 25% per sector away from home.
+- **Money is tight.** No captain can buy everything, so the Outfitter is a real decision.
+- **Morale wears down** on the long voyage regardless of rations.
+
+All the knobs are constants at the top of `core/TravelSim.gd` plus the credits in `data/backgrounds.json`. `tools/balance_sim` plays 200 runs per captain with two bots: one that picks choices at random and one that weighs them. The gap between the two shows how much decisions matter. Current tuning:
+
+| Captain | Thinking bot wins | Random bot wins |
+|---|---|---|
+| Corporate Pilot (Easy) | ~70% | ~32% |
+| Ex-Navy Officer (Medium) | ~56% | ~20% |
+| Reformed Smuggler (Hard) | ~25% | ~7% |
+
+Human players will do better than the thinking bot once they learn the game, but a careless run should usually fail.
+
+### 3.8 Endings
 Arrival triggers a colony epilogue based on who survived. Example: *"With no Scientist, the colony misidentified the native flora… the first winter was hard."* That gives **5–10 epilogue variants** to chase.
 
 ---

@@ -2,7 +2,6 @@ extends BaseScreen
 ## Buy and sell supplies. Each card shows what you have against what the trip needs.
 ## "departure" mode = Luna prices; "station" mode = 50% markup.
 
-const STATION_MARKUP := 1.5
 const SELL_RATE := 0.5
 const CONSUMABLES := ["fuel", "food", "oxygen", "power"]
 
@@ -16,7 +15,7 @@ var _summary: HBoxContainer
 
 func build() -> void:
 	_departure = params.get("mode", "departure") == "departure"
-	_price_mult = 1.0 if _departure else STATION_MARKUP
+	_price_mult = GameState.price_multiplier()
 	_distance = GameState.total_distance() - GameState.distance_travelled()
 
 	var root := make_root(28, 12)
@@ -25,7 +24,7 @@ func build() -> void:
 	var hv := UIKit.vbox(2)
 	hv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hv.add_child(UIKit.title("OUTFITTER", 32, UIKit.ACCENT))
-	hv.add_child(UIKit.label("%s  -  %s" % [GameState.current_node()["name"], "home prices" if _departure else "frontier prices (+50%)"], 17, UIKit.DIM))
+	hv.add_child(UIKit.label("%s  -  %s" % [GameState.current_node()["name"], "home prices" if _departure else "frontier prices (+%d%%)" % int(round((_price_mult - 1.0) * 100.0))], 17, UIKit.DIM))
 	head.add_child(hv)
 	var wallet := UIKit.panel("CardPanel")
 	var wrow := UIKit.hbox(10)
@@ -39,7 +38,7 @@ func build() -> void:
 	var tip := UIKit.panel("AdvisorPanel")
 	var trow := UIKit.hbox(12)
 	trow.add_child(IconView.new("crew", 30, UIKit.ACCENT))
-	var tip_text := "Earth 2 is %d light-units away. Each bar compares what you have with what the whole trip needs at %s speed on %s rations. Fill the bars to green, and keep some credits for emergencies." % [
+	var tip_text := "Earth 2 is %d light-units away. Each bar compares what you have with what the whole trip needs at %s speed on %s rations. You probably can't afford everything: prices only rise from here, so decide what matters most." % [
 		int(_distance), GameState.THRUST[GameState.thrust]["name"], GameState.RATIONS[GameState.rations]["name"]]
 	if not _departure:
 		tip_text = "%d light-units left to Earth 2. Bars show what you need to finish the trip at your current settings." % int(_distance)

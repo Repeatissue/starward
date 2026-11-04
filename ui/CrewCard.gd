@@ -11,6 +11,8 @@ func _init(p_data: Dictionary = {}) -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	if not data.is_empty():
 		tooltip_text = "%s\n%s, %s\nHealth %d, Morale %d" % [data["name"], data["role"], data["trait"], int(data["health"]), int(data["morale"])]
+		if str(data.get("sick", "")) != "":
+			tooltip_text += "\nSick with %s" % data["sick"]
 
 
 func _draw() -> void:
@@ -35,8 +37,13 @@ func _draw() -> void:
 	var x := 64.0
 	var w := size.x - x
 	draw_string(font, Vector2(x, 18), str(data["name"]), HORIZONTAL_ALIGNMENT_LEFT, w, 16, UIKit.TEXT if alive else UIKit.DIM)
+	var sick: String = data.get("sick", "")
 	var sub := "%s  ·  %s" % [data["role"], data["trait"]] if alive else "%s  ·  lost" % data["role"]
-	draw_string(font, Vector2(x, 35), sub, HORIZONTAL_ALIGNMENT_LEFT, w, 13, role_col if alive else UIKit.DIM)
+	var sub_col := role_col if alive else UIKit.DIM
+	if alive and sick != "":
+		sub = "%s  ·  SICK: %s" % [data["role"], sick]
+		sub_col = UIKit.BAD
+	draw_string(font, Vector2(x, 35), sub, HORIZONTAL_ALIGNMENT_LEFT, w, 13, sub_col)
 	if alive:
 		var bw := (w - 8.0) * 0.5
 		var hp := float(data["health"])

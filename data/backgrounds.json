@@ -3,7 +3,7 @@
 		"id": "corporate",
 		"name": "Corporate Pilot",
 		"description": "Twenty years flying executive shuttles, and you saved every credit. A comfortable start, but nobody writes songs about it.",
-		"credits": 1350,
+		"credits": 830,
 		"score_mult": 1.0, "difficulty": "Easy",
 		"bonus": {}
 	},
@@ -11,7 +11,7 @@
 		"id": "navy",
 		"name": "Ex-Navy Officer",
 		"description": "Discharged with a small pension and a habit of keeping ships in one piece. Starts with 2 spare parts.",
-		"credits": 1000,
+		"credits": 720,
 		"score_mult": 2.0, "difficulty": "Medium",
 		"bonus": { "parts": 2 }
 	},
@@ -19,7 +19,7 @@
 		"id": "smuggler",
 		"name": "Reformed Smuggler",
 		"description": "You know every back channel between here and the Kuiper Belt, and you have almost nothing to your name. Starts with 30 fuel and 30 food. A hard start with a big reward.",
-		"credits": 800,
+		"credits": 570,
 		"score_mult": 3.0, "difficulty": "Hard",
 		"bonus": { "fuel": 30, "food": 30 }
 	}

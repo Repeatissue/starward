@@ -6,7 +6,29 @@ const CRYO_POWER_PER_DAY := 1.0
 const DRIFT_SPEED := 0.25
 const MAX_DAYS_PER_PRESS := 30
 
+# --- Difficulty knobs (tune with tools/balance_sim) -----------------------
+## Morale slowly wears down on a long voyage, whatever the rations.
+const MORALE_DRIFT := -0.4
+## Daily chance per crew member of falling ill, plus extra risk from hard living.
+const ILLNESS_BASE := 0.015
+const ILLNESS_BY_RATIONS := {"full": 0.0, "reduced": 0.006, "starvation": 0.02}
+const ILLNESS_BY_THRUST := {"cruise": 0.0, "burn": 0.004, "overdrive": 0.01}
+const ILLNESS_LOW_MORALE := 0.008
+const ILLNESS_LOW_HEALTH := 0.006
+## Health lost per day while ill (halved with a Medic), and daily recovery chance.
+const ILLNESS_DAMAGE := 5.5
+const RECOVERY_BASE := 0.08
+const RECOVERY_MEDIC := 0.12
+const RECOVERY_FULL_RATIONS := 0.05
+## Daily chance a ship system breaks and needs a spare part.
+const BREAKDOWN_BASE := 0.02
+const BREAKDOWN_BY_THRUST := {"cruise": 0.0, "burn": 0.01, "overdrive": 0.03}
+
+const ILLNESSES := ["radiation sickness", "void fever", "bone-loss syndrome", "station flu", "a broken arm", "infected burns", "decompression sickness"]
+const SYSTEMS := ["main thruster coupling", "reactor coolant pump", "navigation computer", "hull pressure seal", "cryo bay regulator", "water reclaimer", "airlock motor"]
+
 var _warned: Dictionary = {}
+var _repairing := false
 
 
 ## Advances day by day until something needs the player.
@@ -86,7 +108,7 @@ func _tick_day(moving: bool) -> void:
 	# Crew health and morale.
 	for c in living:
 		var dh := float(r["health"])
-		var dm := float(r["morale"]) + float(t["morale"])
+		var dm := float(r["morale"]) + float(t["morale"]) + MORALE_DRIFT
 		if not fed:
 			dh -= 8.0
 			dm -= 5.0
@@ -98,7 +120,55 @@ func _tick_day(moving: bool) -> void:
 			c["health"] = float(c["health"]) - 10.0
 			GameState.add_log("Day %d. %s has a breakdown and hurts themself." % [GameState.day, c["name"]])
 
+	_roll_illness()
+	if not _repairing:
+		_roll_breakdown()
 	GameState.check_end_conditions()
+
+
+## Like dysentery on the old trail, illness is the steady killer out here.
+## Risk rises with poor rations, hard thrust, low morale and poor health. A Medic helps a lot.
+func _roll_illness() -> void:
+	var medic := GameState.has_role("Medic")
+	for c in GameState.living_crew():
+		var sick: String = c.get("sick", "")
+		if sick != "":
+			c["health"] = float(c["health"]) - (ILLNESS_DAMAGE * 0.5 if medic else ILLNESS_DAMAGE)
+			var recover := RECOVERY_BASE + (RECOVERY_MEDIC if medic else 0.0) + (RECOVERY_FULL_RATIONS if GameState.rations == "full" else 0.0)
+			if RNG.chance(recover):
+				c["sick"] = ""
+				GameState.add_log("Day %d. %s has recovered from %s." % [GameState.day, c["name"], sick])
+			continue
+		var p := ILLNESS_BASE + float(ILLNESS_BY_RATIONS[GameState.rations]) + float(ILLNESS_BY_THRUST[GameState.thrust])
+		if float(c["morale"]) < 30.0:
+			p += ILLNESS_LOW_MORALE
+		if float(c["health"]) < 50.0:
+			p += ILLNESS_LOW_HEALTH
+		if RNG.chance(p):
+			c["sick"] = RNG.pick(ILLNESSES)
+			GameState.add_log("Day %d. %s has %s." % [GameState.day, c["name"], c["sick"]])
+
+
+## Like a broken wagon axle: something fails, and you'd better have a spare part.
+func _roll_breakdown() -> void:
+	if not RNG.chance(BREAKDOWN_BASE + float(BREAKDOWN_BY_THRUST[GameState.thrust])):
+		return
+	var system: String = RNG.pick(SYSTEMS)
+	var engineer := GameState.has_role("Engineer")
+	_repairing = true
+	if GameState.get_res("parts") >= 1.0 and engineer:
+		GameState.add_resource("parts", -1.0)
+		GameState.add_log("Day %d. The %s failed. Your engineer replaced it with a spare part." % [GameState.day, system])
+	elif GameState.get_res("parts") >= 1.0:
+		GameState.add_resource("parts", -1.0)
+		GameState.add_log("Day %d. The %s failed. With no engineer, fitting the spare takes 2 days." % [GameState.day, system])
+		idle_days(2)
+	else:
+		var lost := 3 if engineer else 6
+		GameState.add_resource("hull", -5.0)
+		GameState.add_log("Day %d. The %s failed and there are no spare parts. You lose %d days jury-rigging a fix." % [GameState.day, system, lost])
+		idle_days(lost)
+	_repairing = false
 
 
 func _arrive() -> Dictionary:

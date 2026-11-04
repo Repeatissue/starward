@@ -296,6 +296,16 @@ func _advice() -> Array:
 		return ["The hull is breached and leaking oxygen. Buy hull plating at the next station.", "hull", UIKit.BAD]
 
 	for c in GameState.living_crew():
+		var sick: String = c.get("sick", "")
+		if sick != "":
+			if GameState.has_role("Medic"):
+				return ["%s has %s (health %d). Our Medic is treating them. Full rations speed recovery." % [c["name"], sick, int(c["health"])], "crew", UIKit.BAD]
+			return ["%s has %s (health %d) and we have no Medic. Keep rations full and the pace slow." % [c["name"], sick, int(c["health"])], "crew", UIKit.BAD]
+
+	if GameState.get_res("parts") < 1.0:
+		return ["We have no spare parts. The next breakdown will cost us days. Buy some at the next station.", "parts", UIKit.ACCENT]
+
+	for c in GameState.living_crew():
 		if float(c["health"]) < 35.0:
 			return ["%s is badly hurt (health %d). Full rations help the crew recover." % [c["name"], int(c["health"])], "crew", UIKit.ACCENT]
 

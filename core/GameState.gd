@@ -38,7 +38,7 @@ const THRUST := {
 }
 ## Food per crew member per day, and the daily effect on health and morale.
 const RATIONS := {
-	"full": {"name": "Full", "food": 1.0, "health": 1.0, "morale": 0.5},
+	"full": {"name": "Full", "food": 1.0, "health": 0.5, "morale": 0.5},
 	"reduced": {"name": "Reduced", "food": 0.6, "health": 0.0, "morale": -1.0},
 	"starvation": {"name": "Starvation", "food": 0.25, "health": -3.0, "morale": -3.0},
 }
@@ -99,7 +99,7 @@ func new_run(p_seed: int, bg: Dictionary) -> void:
 
 func _make_crew(name_text: String, role: String, trait_text: String, morale: float) -> Dictionary:
 	return {"name": name_text, "role": role, "trait": trait_text,
-		"health": 100.0, "morale": morale, "alive": true}
+		"health": 100.0, "morale": morale, "alive": true, "sick": ""}
 
 
 func add_crew_member(name_text: String, role: String, trait_text: String) -> void:
@@ -152,6 +152,13 @@ func next_stop() -> Dictionary:
 
 
 # --- Supplies forecast ---------------------------------------------------
+
+## Prices climb the further you get from home, as they did at the old trail's forts.
+func price_multiplier() -> float:
+	if node_index == 0:
+		return 1.0
+	return 1.0 + 0.25 * int(current_node().get("sector", 1))
+
 
 func speed() -> float:
 	return float(THRUST[thrust]["speed"])
