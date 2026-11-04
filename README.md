@@ -1,6 +1,12 @@
 # STARWARD: The Long Haul to Earth 2
 
+[![Test & Build](https://github.com/Repeatissue/starward/actions/workflows/build.yml/badge.svg)](https://github.com/Repeatissue/starward/actions/workflows/build.yml)
+
+**▶ Play in your browser: https://repeatissue.github.io/starward/** (desktop or phone)
+
 A journey-survival roguelite built in **Godot 4.7** (GDScript). Design doc: [GAME_DESIGN_AND_PLAN.md](GAME_DESIGN_AND_PLAN.md).
+
+Every push to `main` runs the balance sim and smoke test, exports Web/Windows/Linux builds (downloadable from each run on the Actions tab), and redeploys the browser version.
 
 ## Running it
 1. Open Godot 4.7 → **Import** → choose this folder's `project.godot`.
