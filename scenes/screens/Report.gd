@@ -43,8 +43,12 @@ func build() -> void:
 	stats.add_theme_constant_override("h_separation", 8)
 	stats.add_theme_constant_override("v_separation", 8)
 	stats.add_child(UIKit.chip("%d days" % GameState.day, UIKit.DIM, "time"))
-	stats.add_child(UIKit.chip("%d / %d colonists" % [GameState.colonists, GameState.STARTING_COLONISTS], Icons.color_for("colonists"), "colonists"))
-	stats.add_child(UIKit.chip("%d crew survived" % GameState.living_crew().size(), UIKit.TEXT, "crew"))
+	if win:
+		stats.add_child(UIKit.chip("%d / %d colonists delivered" % [GameState.colonists, GameState.STARTING_COLONISTS], Icons.color_for("colonists"), "colonists"))
+		stats.add_child(UIKit.chip("%d crew survived" % GameState.living_crew().size(), UIKit.TEXT, "crew"))
+	else:
+		stats.add_child(UIKit.chip("%d colonists lost with the ship" % GameState.colonists, UIKit.BAD, "colonists"))
+		stats.add_child(UIKit.chip("Journey %d%% complete" % int(GameState.journey_fraction() * 100.0), UIKit.DIM, "waypoint"))
 	stats.add_child(UIKit.chip("Hull %d" % int(GameState.get_res("hull")), Icons.color_for("hull"), "hull"))
 	col.add_child(stats)
 

@@ -171,7 +171,7 @@
 		"title": "No Questions Asked",
 		"text": "A freighter captain offers 300 credits to carry three sealed crates to the Lantern Waystation. No questions asked.",
 		"choices": [
-			{ "text": "Take the crates.", "effects": { "credits": 300, "set_flag": "smuggling" }, "result": "The crates hum faintly. You decide not to think about it." },
+			{ "text": "Take the crates.", "hint": "easy money, if nobody checks your hold", "effects": { "credits": 300, "set_flag": "smuggling" }, "result": "The crates hum faintly. You decide not to think about it." },
 			{ "text": "Refuse.", "effects": {}, "result": "The captain shrugs and moves on." }
 		]
 	},

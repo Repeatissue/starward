@@ -39,10 +39,10 @@ func build() -> void:
 	var trow := UIKit.hbox(12)
 	trow.add_child(IconView.new("crew", 30, UIKit.ACCENT))
 	var trip_days := ceili(_distance / GameState.speed())
-	var tip_text := "Earth 2 is about %d days away at %s speed. Each bar compares what you have with what the whole trip needs on %s rations. You probably can't afford everything: prices only rise from here, so decide what matters most." % [
-		trip_days, GameState.THRUST[GameState.thrust]["name"], GameState.RATIONS[GameState.rations]["name"]]
+	var tip_text := "Earth 2 is about %s away at %s speed. Each bar compares what you have with what the whole trip needs on %s rations. You probably can't afford everything: prices only rise from here, so decide what matters most." % [
+		GameState.days(trip_days), GameState.THRUST[GameState.thrust]["name"], GameState.RATIONS[GameState.rations]["name"]]
 	if not _departure:
-		tip_text = "About %d days left to Earth 2 at %s speed. Bars show what you need to finish the trip at your current settings." % [trip_days, GameState.THRUST[GameState.thrust]["name"]]
+		tip_text = "About %s left to Earth 2 at %s speed. Bars show what you need to finish the trip at your current settings." % [GameState.days(trip_days), GameState.THRUST[GameState.thrust]["name"]]
 	trow.add_child(UIKit.para(tip_text, 16))
 	tip.add_child(trow)
 	root.add_child(tip)

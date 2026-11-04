@@ -3,6 +3,10 @@ extends Node
 ## Event format: see data/events/*.json and the README.
 
 const DAILY_EVENT_CHANCE := 0.18
+## Repeatable events ("once": false) can't recur within this many days,
+## and happen at most "max_per_run" times (default 2) in one journey.
+const REPEAT_COOLDOWN_DAYS := 12
+const DEFAULT_MAX_PER_RUN := 2
 
 
 ## Rolled once per travel day. Returns {} when nothing happens.
@@ -29,8 +33,19 @@ func get_event(id: String) -> Dictionary:
 
 
 func event_available(e: Dictionary) -> bool:
-	if e.get("once", true) and GameState.seen_events.has(e["id"]):
-		return false
+	var seen: Variant = GameState.seen_events.get(e["id"])
+	if seen != null:
+		if e.get("once", true):
+			return false
+		var count := 1
+		var last_day := 0
+		if seen is Dictionary:
+			count = int(seen.get("count", 1))
+			last_day = int(seen.get("day", 0))
+		if count >= int(e.get("max_per_run", DEFAULT_MAX_PER_RUN)):
+			return false
+		if GameState.day - last_day < REPEAT_COOLDOWN_DAYS:
+			return false
 	return _requirements_met(e.get("requires", {}))
 
 
@@ -52,13 +67,46 @@ func choice_label(choice: Dictionary) -> String:
 	var hint: String = choice.get("hint", "")
 	if hint == "" and choice.has("outcomes"):
 		hint = "uncertain outcome"
+	elif hint == "":
+		hint = _cost_summary(choice.get("effects", {}), req.get("resources", {}))
 	return prefix + str(choice["text"]) + ("   (%s)" % hint if hint != "" else "")
+
+
+## For choices with a fixed result, list what they cost (never what they reward),
+## so there are no hidden prices. Resources already shown as a requirement are skipped.
+func _cost_summary(fx: Dictionary, required: Dictionary) -> String:
+	var costs: Array = []
+	for key in fx:
+		var v := float(fx[key]) if not (fx[key] is Dictionary) and not (fx[key] is String) else 0.0
+		if key in GameState.RESOURCE_KEYS:
+			if v < 0.0 and not required.has(key):
+				costs.append("%d %s" % [int(-v), str(GameState.RESOURCE_NAMES[key]).to_lower()])
+		else:
+			match key:
+				"colonists":
+					if v < 0.0:
+						costs.append("%d colonists" % int(-v))
+				"crew_health":
+					if v < 0.0:
+						costs.append("%d health for every crew member" % int(-v))
+				"crew_morale":
+					if v < 0.0:
+						costs.append("%d morale" % int(-v))
+				"injure_random":
+					costs.append("someone gets hurt")
+				"kill_random":
+					costs.append("a life")
+				"days":
+					costs.append(GameState.days(int(v)))
+	return ("costs " + ", ".join(PackedStringArray(costs))) if not costs.is_empty() else ""
 
 
 ## Applies the choice (or one of its weighted outcomes).
 ## Returns {"text": String, "changes": Array[String]} for the popup.
 func resolve_choice(event: Dictionary, choice: Dictionary) -> Dictionary:
-	GameState.seen_events[event["id"]] = true
+	var prev: Variant = GameState.seen_events.get(event["id"])
+	var count := int(prev.get("count", 1)) + 1 if prev is Dictionary else (2 if prev != null else 1)
+	GameState.seen_events[event["id"]] = {"count": count, "day": GameState.day}
 	var outcome: Dictionary = choice
 	if choice.has("outcomes"):
 		outcome = RNG.pick_weighted(choice["outcomes"])
@@ -110,7 +158,7 @@ func apply_effects(fx: Dictionary) -> Array:
 				notes.append(_note("crew", "%s joins the crew" % v.get("name", "Stranger"), true))
 			"days":
 				TravelSim.idle_days(int(v))
-				notes.append(_note("time", "%d days lost" % int(v), false))
+				notes.append(_note("time", "%s lost" % GameState.days(int(v)), false))
 			_:
 				push_warning("Unknown event effect: %s" % key)
 	return notes

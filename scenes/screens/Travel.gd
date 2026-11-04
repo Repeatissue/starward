@@ -261,10 +261,10 @@ func _update_meters() -> void:
 				meter.set_data(GameState.get_res("parts"), "Used for emergency repairs", false)
 			"fuel":
 				var fuel_days := GameState.days_left("fuel")
-				meter.set_data(GameState.get_res("fuel"), "~%d days of thrust at %s" % [int(fuel_days), GameState.THRUST[GameState.thrust]["name"]], fuel_days < 5.0)
+				meter.set_data(GameState.get_res("fuel"), "~%s of thrust at %s" % [GameState.days(int(fuel_days)), GameState.THRUST[GameState.thrust]["name"]], fuel_days < 5.0)
 			_:
 				var dl := GameState.days_left(key)
-				meter.set_data(GameState.get_res(key), "Lasts ~%d days" % int(dl), dl < 6.0)
+				meter.set_data(GameState.get_res(key), "Lasts ~%s" % GameState.days(int(dl)), dl < 6.0)
 
 
 ## Returns [text, icon kind, colour]: the single most useful thing to tell the player right now.
@@ -285,8 +285,8 @@ func _advice() -> Array:
 		if dl < days_to_stop:
 			var res_name: String = GameState.RESOURCE_NAMES[key]
 			if at_station:
-				return ["%s will run out in about %d days, before you reach %s. Tap Dock & Trade now." % [res_name, int(dl), stop_name], key, UIKit.BAD]
-			return ["%s runs out in about %d days, but %s is %d days away. %s" % [res_name, int(dl), stop_name, days_to_stop, fixes[key]], key, UIKit.BAD]
+				return ["%s will run out in about %s, before you reach %s. Tap Dock & Trade now." % [res_name, GameState.days(int(dl)), stop_name], key, UIKit.BAD]
+			return ["%s runs out in about %s, but %s is %s away. %s" % [res_name, GameState.days(int(dl)), stop_name, GameState.days(days_to_stop), fixes[key]], key, UIKit.BAD]
 
 	var fuel_range := GameState.days_left("fuel") * GameState.speed()
 	if fuel_range < float(stop["distance"]):
@@ -324,4 +324,4 @@ func _advice() -> Array:
 		return ["We're docked at %s. Check our supplies, then press Continue Journey to launch." % node["name"], "station", UIKit.INFO]
 	if at_station:
 		return ["Docked at %s. Trade if we need anything, then press Continue Journey." % node["name"], "station", UIKit.INFO]
-	return ["All systems steady, Captain. %s is about %d days ahead." % [stop_name, days_to_stop], "waypoint", UIKit.GOOD]
+	return ["All systems steady, Captain. %s is about %s ahead." % [stop_name, GameState.days(days_to_stop)], "waypoint", UIKit.GOOD]

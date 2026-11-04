@@ -33,11 +33,13 @@ const LOW_SUPPLY_DAYS := 3.0
 var _warned: Dictionary = {}
 var _repairing := false
 var _alert := ""
+var _warned_day: Dictionary = {}
 
 
 ## Clears per-run warning state. Called when a run starts or loads.
 func reset() -> void:
 	_warned.clear()
+	_warned_day.clear()
 	_alert = ""
 
 
@@ -47,22 +49,55 @@ func reset() -> void:
 func travel() -> Dictionary:
 	if GameState.ended or GameState.next_node().is_empty():
 		return {"type": "ended"}
-	_alert = ""
+	# A warning that fired on the same day as an arrival or event is shown now, before flying on.
+	if _alert != "":
+		return _take_alert()
 	for i in MAX_DAYS_PER_PRESS:
 		_tick_day(true)
 		if GameState.ended:
 			return {"type": "ended"}
+		# While a vital supply is empty, pause every day so the player sees the crew suffering.
+		var empty := _empty_vitals()
+		if not empty.is_empty() and _alert == "":
+			_alert = "Day %d. Still no %s aboard. The crew is getting weaker every day: %s." % [
+				GameState.day, " or ".join(PackedStringArray(empty)), _crew_health_summary()]
 		var nxt := GameState.next_node()
 		if GameState.progress >= float(nxt["distance"]):
 			return _arrive()
 		if _alert != "":
-			var text := _alert
-			_alert = ""
-			return {"type": "alert", "text": text}
+			return _take_alert()
 		var ev := EventEngine.roll_travel_event()
 		if not ev.is_empty():
 			return {"type": "event", "event": ev}
 	return {"type": "pause"}
+
+
+func _take_alert() -> Dictionary:
+	var text := _alert
+	_alert = ""
+	return {"type": "alert", "text": text}
+
+
+## Vital supplies that are completely empty right now (fuel only counts while there's crew to fly).
+## Only counts a supply once its "empty" warning has fired, i.e. the crew has actually gone without.
+func _empty_vitals() -> Array:
+	var out: Array = []
+	for pair in [["food", "no_food"], ["oxygen", "no_o2"]]:
+		if GameState.get_res(pair[0]) <= 0.0 and _warned.get(pair[1], false) and not _first_warning_today(pair[1]):
+			out.append(str(GameState.RESOURCE_NAMES[pair[0]]).to_lower())
+	return out
+
+
+## True if this warning was raised on the current day (so we don't double up with "still none").
+func _first_warning_today(id: String) -> bool:
+	return _warned_day.get(id, -1) == GameState.day
+
+
+func _crew_health_summary() -> String:
+	var parts: Array = []
+	for c in GameState.living_crew():
+		parts.append("%s %d" % [str(c["name"]).split(" ")[0], int(c["health"])])
+	return "health " + ", ".join(PackedStringArray(parts))
 
 
 ## Days spent waiting (storms, detours): supplies drain but the ship doesn't move.
@@ -151,7 +186,7 @@ func _check_low_supplies() -> void:
 		if GameState.get_res(key) <= 0.0:
 			continue  # the "empty" warning covers this
 		if dl < LOW_SUPPLY_DAYS:
-			_warn(id, "%s is running low: about %d days left at this rate." % [GameState.RESOURCE_NAMES[key], int(dl)])
+			_warn(id, "%s is running low: about %s left at this rate." % [GameState.RESOURCE_NAMES[key], GameState.days(int(dl))])
 		elif dl >= LOW_SUPPLY_DAYS + 2.0:
 			_clear_warning(id)
 
@@ -228,6 +263,7 @@ func _arrive() -> Dictionary:
 func _warn(id: String, text: String) -> void:
 	if not _warned.get(id, false):
 		_warned[id] = true
+		_warned_day[id] = GameState.day
 		GameState.add_log("Day %d. %s" % [GameState.day, text])
 		if _alert == "":
 			_alert = "Day %d. %s" % [GameState.day, text]

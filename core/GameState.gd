@@ -154,6 +154,11 @@ func next_stop() -> Dictionary:
 
 # --- Supplies forecast ---------------------------------------------------
 
+## "1 day" / "3 days". Use for every day count shown to the player.
+static func days(n: int) -> String:
+	return "%d day" % n if n == 1 else "%d days" % n
+
+
 ## Prices climb the further you get from home, as they did at the old trail's forts.
 func price_multiplier() -> float:
 	if node_index == 0:
@@ -236,7 +241,7 @@ func check_end_conditions() -> void:
 			c["health"] = 0.0
 			add_log("%s, your %s, has died. You commit them to the dark." % [c["name"], c["role"]])
 	if living_crew().is_empty():
-		end_run(false, "The last of your crew is gone. The %s drifts on, silent, its sleepers never to wake." % SHIP_NAME)
+		end_run(false, "The last of your crew is gone. The %s drifts on in silence, %d colonists still asleep in the hold with no one left to wake them." % [SHIP_NAME, colonists])
 	elif get_res("hull") <= 0.0:
 		end_run(false, "The hull gives way. The %s breaks apart between the stars." % SHIP_NAME)
 	elif colonists <= 0:
@@ -287,6 +292,7 @@ func to_dict() -> Dictionary:
 		"seen_events": seen_events,
 		"log_lines": log_lines,
 		"warned": TravelSim._warned,
+		"alert": TravelSim._alert,
 	}
 
 
@@ -308,6 +314,7 @@ func from_dict(d: Dictionary) -> void:
 	log_lines = d.get("log_lines", [])
 	TravelSim.reset()
 	TravelSim._warned = d.get("warned", {})
+	TravelSim._alert = str(d.get("alert", ""))
 	run_active = true
 	ended = false
 	victory = false

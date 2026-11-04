@@ -160,8 +160,12 @@ func _print_state() -> void:
 	if GameState.ended:
 		_out.append("\n=== %s ===" % ("LANDFALL: YOU WIN" if GameState.victory else "GAME OVER"))
 		_out.append(GameState.end_reason)
-		_out.append("Day %d. Colonists %d/%d. Crew alive %d. Score %d." % [GameState.day, GameState.colonists,
-			GameState.STARTING_COLONISTS, GameState.living_crew().size(), GameState.score()])
+		if GameState.victory:
+			_out.append("Day %d. Colonists delivered %d/%d. Crew alive %d. Score %d." % [GameState.day, GameState.colonists,
+				GameState.STARTING_COLONISTS, GameState.living_crew().size(), GameState.score()])
+		else:
+			_out.append("Day %d. Journey %d%% complete. %d colonists lost with the ship. Partial score %d." % [GameState.day,
+				int(GameState.journey_fraction() * 100.0), GameState.colonists, GameState.score()])
 		return
 
 	var node := GameState.current_node()
@@ -170,8 +174,8 @@ func _print_state() -> void:
 	var where := "At: %s (%s, %s)." % [node["name"], node["type"], node["sector_name"]]
 	if GameState.progress > 0.0:
 		where = "In flight from %s toward %s." % [node["name"], GameState.next_node()["name"]]
-	_out.append("%s  Next resupply: %s in ~%d days at %s." % [where,
-		stop["name"], ceili(float(stop["distance"]) / GameState.speed()), GameState.thrust])
+	_out.append("%s  Next resupply: %s in ~%s at %s." % [where,
+		stop["name"], GameState.days(ceili(float(stop["distance"]) / GameState.speed())), GameState.thrust])
 	var use: Array = []
 	for key in ["fuel", "food", "oxygen", "power"]:
 		use.append("%s %.1f" % [key, GameState.daily_use(key)])
@@ -181,7 +185,7 @@ func _print_state() -> void:
 	for key in GameState.RESOURCE_KEYS:
 		var dl := ""
 		if key in ["fuel", "food", "oxygen", "power"]:
-			dl = " (~%d days)" % int(GameState.days_left(key))
+			dl = " (~%s)" % GameState.days(int(GameState.days_left(key)))
 		res.append("%s %d%s" % [key, int(GameState.get_res(key)), dl])
 	_out.append("Ship: " + ", ".join(PackedStringArray(res)) + ", colonists %d" % GameState.colonists)
 	for c in GameState.crew:
