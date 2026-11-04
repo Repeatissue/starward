@@ -85,13 +85,13 @@ jobs:
           name: Starward-Web
           path: build/web
       - uses: actions/upload-pages-artifact@v3
-        if: github.event_name == 'push' && github.event.repository.private == false
+        if: github.event_name != 'pull_request' && github.event.repository.private == false
         with:
           path: build/web
 
   deploy-web:
     needs: export
-    if: github.event_name == 'push' && github.event.repository.private == false
+    if: github.event_name != 'pull_request' && github.event.repository.private == false
     runs-on: ubuntu-latest
     permissions:
       pages: write
